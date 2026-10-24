@@ -1,0 +1,8 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Angular / Node.js
+FE/node_modules/
+FE/dist/
+FE/.angular/cache/
