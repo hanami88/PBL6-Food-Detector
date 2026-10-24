@@ -1,0 +1,342 @@
+<!-- BEGIN: MainContent -->
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+  <!-- Breadcrumb & Back Link -->
+  <div class="flex items-center justify-between text-sm">
+    <a class="inline-flex items-center gap-2 font-medium text-[#68605C] hover:text-[#EE5A36] transition group" href="#">
+      <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
+      <span>Quay lại danh sách quán {{ restaurant.district }}</span>
+    </a>
+    <div class="text-xs text-[#68605C] hidden sm:block">
+      Trang chủ <span class="mx-1">/</span> {{ restaurant.district }} <span class="mx-1">/</span> {{ restaurant.name }}
+    </div>
+  </div>
+
+  <!-- BEGIN: RestaurantGallery -->
+  <section class="relative rounded-3xl overflow-hidden shadow-sm border border-[#F0E5E0] bg-white p-2">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 h-[420px]">
+      <!-- Main Highlight Image -->
+      <div class="md:col-span-2 h-full rounded-2xl overflow-hidden relative group">
+        <img [src]="restaurant.gallery.mainImage.src" [alt]="restaurant.gallery.mainImage.alt" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
+        <span class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full font-medium">
+          <i class="fa-solid fa-camera mr-1"></i> Ảnh từ thực khách bản địa
+        </span>
+      </div>
+      <!-- Secondary Images Grid -->
+      <div class="md:col-span-2 grid grid-cols-2 gap-2 h-full">
+        @for (img of restaurant.gallery.subImages; track $index) {
+          <div class="rounded-2xl overflow-hidden relative group">
+            <img [src]="img.src" [alt]="img.alt" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+          </div>
+        }
+      </div>
+    </div>
+    <!-- View All Photos Button -->
+    <button class="absolute bottom-5 right-5 bg-white/95 hover:bg-white text-[#1A1817] px-4 py-2 rounded-xl text-xs font-bold shadow-lg border border-black/5 flex items-center gap-2 transition hover:scale-105">
+      <i class="fa-solid fa-images text-[#EE5A36]"></i>
+      <span>Xem tất cả {{ restaurant.gallery.totalPhotosCount }} ảnh</span>
+    </button>
+  </section>
+  <!-- END: RestaurantGallery -->
+
+  <!-- BEGIN: RestaurantHeroSummary -->
+  <section class="bg-white rounded-3xl p-6 sm:p-8 border border-[#F0E5E0] shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div class="space-y-3">
+        <div class="inline-flex items-center gap-2 text-xs font-bold text-[#EE5A36] uppercase tracking-wider bg-[#FDF0ED] px-3 py-1 rounded-full">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>{{ restaurant.district }} • {{ restaurant.city }}</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A1817] tracking-tight">
+          {{ restaurant.name }}
+        </h1>
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-sm">
+          <div class="flex items-center gap-1.5 font-bold text-[#1A1817]">
+            <span class="bg-amber-400 text-amber-950 text-xs px-2 py-0.5 rounded-md flex items-center gap-1">
+              <i class="fa-solid fa-star text-[10px]"></i> {{ restaurant.rating }}
+            </span>
+            <span class="text-[#68605C] underline font-medium cursor-pointer">({{ restaurant.reviewCount }} đánh giá)</span>
+          </div>
+          <span class="text-neutral-300">•</span>
+          <div class="flex items-center gap-1 font-semibold text-[#1A1817]">
+            <i class="fa-solid fa-coins text-[#EE5A36]"></i>
+            <span>{{ restaurant.priceRange }}</span>
+          </div>
+          <span class="text-neutral-300">•</span>
+          <!-- Status Badge -->
+          <span [ngClass]="restaurant.isOpen ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'" class="inline-flex items-center gap-1.5 px-3 py-1 font-semibold text-xs rounded-full border">
+            <span [ngClass]="restaurant.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'" class="w-2 h-2 rounded-full"></span>
+            {{ restaurant.isOpen ? 'Đang mở cửa' : 'Đã đóng cửa' }} ({{ restaurant.openingHoursText }})
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FDF0ED] text-[#EE5A36] font-semibold text-xs rounded-full border border-[#EE5A36]/20">
+            <i class="fa-solid fa-circle-check"></i> Đã xác minh ngày {{ restaurant.verifiedDate }}
+          </span>
+        </div>
+      </div>
+      <!-- Right Action Button Group -->
+      <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 pt-2 lg:pt-0">
+        <button (click)="toggleBookmark()" [ngClass]="restaurant.isBookmarked ? 'bg-[#FDF0ED] border-[#EE5A36] text-[#EE5A36]' : 'bg-white border-[#F0E5E0] text-[#1A1817] hover:text-[#EE5A36] hover:bg-[#FDF0ED] hover:border-[#EE5A36]'" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2">
+          <i [class]="restaurant.isBookmarked ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'"></i>
+          <span>Lưu quán</span>
+        </button>
+        <button class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#EE5A36] hover:bg-[#D84926] text-white text-xs font-bold transition shadow-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-diamond-turn-right"></i>
+          <span>Chỉ đường</span>
+        </button>
+        <button class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-[#F0E5E0] bg-white hover:bg-neutral-50 text-[#1A1817] text-xs font-bold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-phone"></i>
+          <span>Gọi điện</span>
+        </button>
+        <button class="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl border border-[#F0E5E0] bg-white hover:bg-neutral-50 text-[#68605C] text-xs font-bold transition flex items-center justify-center">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+  <!-- END: RestaurantHeroSummary -->
+
+  <!-- BEGIN: TwoColumnDetailContent -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+    <!-- LEFT COLUMN: Main Details (8 Cols) -->
+    <div class="lg:col-span-8 space-y-6">
+
+      <!-- Card: Basic Information -->
+      <section class="bg-white rounded-3xl p-6 sm:p-7 border border-[#F0E5E0] shadow-sm space-y-6">
+        <h2 class="text-xl font-bold text-[#1A1817] flex items-center gap-2.5">
+          <i class="fa-solid fa-store text-[#EE5A36]"></i>
+          <span>Thông tin quán</span>
+        </h2>
+        <div class="space-y-4 text-sm text-[#1A1817]">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#FDF0ED] text-[#EE5A36] flex items-center justify-center shrink-0 mt-0.5">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div>
+              <span class="block text-xs font-bold text-[#68605C] uppercase tracking-wider">Địa chỉ phục vụ</span>
+              <span class="font-medium text-base">{{ restaurant.address }}</span>
+            </div>
+          </div>
+          <!-- Operating Hours Table -->
+          <div class="border border-[#F0E5E0] rounded-2xl p-4 bg-[#FFF8F6]/60">
+            <div class="flex items-center justify-between font-bold text-xs text-[#68605C] mb-3 pb-2 border-b border-[#F0E5E0]">
+              <span class="flex items-center gap-1.5"><i class="fa-regular fa-clock text-[#EE5A36]"></i> Giờ mở cửa hàng tuần</span>
+              @if (restaurant.isOpen) {
+                <span class="text-[#EE5A36] bg-[#FDF0ED] px-2 py-0.5 rounded">Hôm nay đang hoạt động</span>
+              }
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
+              @for (schedule of restaurant.weeklySchedule; track $index) {
+                <div [ngClass]="schedule.isToday ? 'bg-[#FDF0ED]/80 font-bold px-2 rounded' : ''"
+                     class="flex justify-between py-1 border-b border-dashed border-[#F0E5E0]/80">
+                  <span [ngClass]="schedule.isToday ? 'text-[#EE5A36]' : 'text-[#68605C]'">{{ schedule.day }}</span>
+                  <span [ngClass]="schedule.isToday ? 'text-[#EE5A36]' : 'font-semibold text-[#1A1817]'">{{ schedule.hours }}</span>
+                </div>
+              }
+            </div>
+          </div>
+          <!-- Amenities Tags -->
+          <div>
+            <span class="block text-xs font-bold text-[#68605C] uppercase tracking-wider mb-2.5">Tiện ích tại quán</span>
+            <div class="flex flex-wrap gap-2 text-xs">
+              @for (amenity of restaurant.amenities; track $index) {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FFF8F6] border border-[#F0E5E0] rounded-xl font-medium text-[#1A1817]">
+                  <i [class]="amenity.iconClass"></i> {{ amenity.label }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card: Featured Menu -->
+      <section class="bg-white rounded-3xl p-6 sm:p-7 border border-[#F0E5E0] shadow-sm space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-[#1A1817] flex items-center gap-2.5">
+            <i class="fa-solid fa-utensils text-[#EE5A36]"></i>
+            <span>Món nổi bật của quán</span>
+          </h2>
+          <a class="text-xs font-bold text-[#EE5A36] hover:underline" href="#">Xem menu đầy đủ →</a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          @for (item of restaurant.featuredMenu; track item.id) {
+            <div class="border border-[#F0E5E0] rounded-2xl overflow-hidden hover:shadow-md transition group">
+              <div class="h-32 bg-neutral-100 overflow-hidden relative">
+                <img [src]="item.image" [alt]="item.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                @if (item.badge) {
+                  <span [ngClass]="item.badgeBgClass || 'bg-[#EE5A36]'" class="absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {{ item.badge }}
+                  </span>
+                }
+              </div>
+              <div class="p-3.5 space-y-1">
+                <h3 class="font-bold text-sm text-[#1A1817]">{{ item.name }}</h3>
+                <p class="text-xs text-[#68605C] line-clamp-1">{{ item.description }}</p>
+                <div class="text-[#EE5A36] font-bold text-sm pt-1">{{ item.priceRange }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Card: Map -->
+      <section class="bg-white rounded-3xl p-6 sm:p-7 border border-[#F0E5E0] shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-[#1A1817] flex items-center gap-2.5">
+            <i class="fa-solid fa-map-location-dot text-[#EE5A36]"></i>
+            <span>Vị trí quán trên bản đồ</span>
+          </h2>
+          <a class="inline-flex items-center gap-1.5 text-xs font-bold text-[#EE5A36] hover:underline" href="https://maps.google.com" target="_blank">
+            <span>Mở Google Maps</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+        </div>
+        <div class="relative w-full h-64 rounded-2xl overflow-hidden border border-[#F0E5E0] bg-[#E8ECEF] flex items-center justify-center">
+          <div class="absolute inset-0 bg-[#DEE5DC]/50">
+            <div class="absolute top-0 right-1/4 w-32 h-full bg-[#CCE2EC] rotate-12 transform origin-top blur-[1px]"></div>
+            <div class="absolute top-1/2 left-0 w-full h-4 bg-white/80"></div>
+            <div class="absolute top-0 left-1/3 w-4 h-full bg-white/80"></div>
+          </div>
+          <div class="relative z-10 flex flex-col items-center animate-bounce">
+            <div class="bg-[#EE5A36] text-white p-3 rounded-full shadow-xl border-2 border-white"><i class="fa-solid fa-bowl-food text-lg"></i></div>
+            <span class="bg-[#1A1817] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md mt-1">{{ restaurant.name }}</span>
+          </div>
+          <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-semibold text-[#1A1817] shadow-sm">
+            <i class="fa-solid fa-location-dot text-[#EE5A36] mr-1"></i> {{ restaurant.address }}
+          </div>
+        </div>
+      </section>
+
+      <!-- Card: Reviews from Guests -->
+      <section class="bg-white rounded-3xl p-6 sm:p-7 border border-[#F0E5E0] shadow-sm space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-[#1A1817] flex items-center gap-2.5">
+              <i class="fa-solid fa-comments text-[#EE5A36]"></i>
+              <span>Đánh giá từ thực khách</span>
+            </h2>
+            <p class="text-xs text-[#68605C] mt-0.5">Tổng hợp {{ restaurant.reviewCount }} đánh giá đã được kiểm duyệt thực tế</p>
+          </div>
+          <button class="bg-[#FDF0ED] hover:bg-[#EE5A36] text-[#EE5A36] hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Viết đánh giá của bạn</span>
+          </button>
+        </div>
+        <!-- Reviews Render -->
+        @for (review of restaurant.reviews; track review.id) {
+          <article class="space-y-3 pb-5 border-b border-[#F0E5E0] last:border-0 last:pb-0">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div [class]="review.avatarBgClass" class="w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm">
+                  {{ review.authorInitial }}
+                </div>
+                <div>
+                  <h4 class="font-bold text-sm text-[#1A1817]">{{ review.author }}</h4>
+                  <span class="text-xs text-[#68605C]">{{ review.authorInfo }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                <i [class]="review.rating >= 5.0 ? 'fa-solid fa-star' : 'fa-solid fa-star-half-stroke'"></i>
+                <span class="ml-1 text-[#1A1817]">{{ review.rating | number:'1.1-1' }}</span>
+              </div>
+            </div>
+            <p class="text-sm text-[#1A1817] leading-relaxed">{{ review.content }}</p>
+            @if (review.image) {
+              <div class="w-24 h-24 rounded-xl overflow-hidden border border-[#F0E5E0]">
+                <img [src]="review.image" alt="Ảnh thực tế" class="w-full h-full object-cover">
+              </div>
+            }
+            <div class="flex items-center gap-4 text-xs text-[#68605C]">
+              <button class="hover:text-[#EE5A36] flex items-center gap-1"><i class="fa-regular fa-thumbs-up"></i> Hữu ích ({{ review.helpfulCount }})</button>
+              <button class="hover:text-[#EE5A36] flex items-center gap-1"><i class="fa-regular fa-flag"></i> Báo cáo</button>
+            </div>
+          </article>
+        }
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Widgets (4 Cols) -->
+    <aside class="lg:col-span-4 space-y-6">
+
+      <!-- Aspect Score Breakdown -->
+      <section class="bg-white rounded-3xl p-6 border border-[#F0E5E0] shadow-sm space-y-5">
+        <div class="flex items-center justify-between pb-3 border-b border-[#F0E5E0]">
+          <h3 class="font-bold text-base text-[#1A1817]">Đánh giá theo khía cạnh</h3>
+          <span class="text-xs font-bold text-[#EE5A36] bg-[#FDF0ED] px-2.5 py-1 rounded-full">{{ restaurant.rating | number:'1.1-1' }} / 5.0</span>
+        </div>
+        <div class="space-y-4 text-xs">
+          @for (aspect of restaurant.aspectRatings; track aspect.label) {
+            <div class="space-y-1.5">
+              <div class="flex justify-between font-semibold">
+                <span class="text-[#68605C]">{{ aspect.label }}</span>
+                <span class="text-[#1A1817] font-bold">{{ aspect.score | number:'1.1-1' }} / 5</span>
+              </div>
+              <div class="w-full bg-neutral-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-[#EE5A36] h-full rounded-full" [style.width.%]="aspect.percentage"></div>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Insider Note -->
+        <div class="bg-[#FFF8F6] border border-[#F0E5E0] rounded-2xl p-4 text-xs space-y-2">
+          <div class="font-bold text-[#EE5A36] flex items-center gap-1.5">
+            <i class="fa-solid fa-lightbulb"></i><span>Kinh nghiệm thực tế từ DaNang Guide</span>
+          </div>
+          <p class="text-[#68605C] leading-relaxed" [innerHTML]="restaurant.insiderTip"></p>
+        </div>
+      </section>
+
+      <!-- Suggested Itinerary -->
+      <section class="bg-white rounded-3xl p-6 border border-[#F0E5E0] shadow-sm space-y-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[#FDF0ED] text-[#EE5A36] flex items-center justify-center text-sm"><i class="fa-solid fa-route"></i></div>
+          <h3 class="font-bold text-base text-[#1A1817]">Gợi ý lịch trình kết hợp</h3>
+        </div>
+        <div class="relative pl-5 border-l-2 border-dashed border-[#EE5A36]/30 space-y-4 text-xs">
+          @for (step of restaurant.itinerary; track $index) {
+            <div class="relative">
+              <span [ngClass]="step.isActive ? 'bg-[#EE5A36]' : 'bg-neutral-300'" class="absolute -left-[27px] top-0 w-3.5 h-3.5 rounded-full ring-4 ring-[#FFF8F6]"></span>
+              <span [ngClass]="step.isActive ? 'text-[#EE5A36]' : 'text-[#68605C]'" class="font-bold block">{{ step.time }}</span>
+              <span class="font-semibold text-[#1A1817]">{{ step.title }}</span>
+              @if (step.note) {
+                <span class="text-[#68605C] block text-[11px] mt-0.5">{{ step.note }}</span>
+              }
+            </div>
+          }
+        </div>
+        <button class="w-full py-2.5 rounded-xl border border-[#EE5A36] text-[#EE5A36] hover:bg-[#EE5A36] hover:text-white transition font-bold text-xs">
+          Lưu lộ trình buổi sáng này
+        </button>
+      </section>
+
+      <!-- Similar Nearby Restaurants -->
+      <section class="bg-white rounded-3xl p-6 border border-[#F0E5E0] shadow-sm space-y-4">
+        <h3 class="font-bold text-base text-[#1A1817] flex items-center justify-between">
+          <span>Quán ngon tương tự gần đây</span>
+          <span class="text-xs font-semibold text-[#68605C]">Quận {{ restaurant.district }}</span>
+        </h3>
+        <div class="space-y-3">
+          @for (place of restaurant.similarRestaurants; track place.id) {
+            <a href="#" class="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-[#FFF8F6] border border-transparent hover:border-[#F0E5E0] transition group">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                <img [src]="place.image" [alt]="place.name" class="w-full h-full object-cover group-hover:scale-105 transition">
+              </div>
+              <div class="space-y-0.5 flex-1 min-w-0">
+                <h4 class="font-bold text-xs text-[#1A1817] group-hover:text-[#EE5A36] truncate">{{ place.name }}</h4>
+                <div class="flex items-center gap-2 text-[11px] text-[#68605C]">
+                  <span class="text-amber-500 font-bold"><i class="fa-solid fa-star"></i> {{ place.rating }}</span>
+                  <span>•</span>
+                  <span>Cách {{ place.distance }}</span>
+                </div>
+                <div class="text-[11px] text-[#EE5A36] font-semibold">{{ place.priceRange }}</div>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+
+    </aside>
+  </div>
+</main>
+<!-- END: MainContent -->

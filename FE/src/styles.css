@@ -1,0 +1,61 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+@theme {
+  --color-surface-container-low: #f5f5f4;
+  --color-on-surface: #1c1917;
+  --color-on-surface-variant: #57534e;
+  --color-primary: #b45309;
+
+  --spacing-gutter: 1.5rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-xl: 2rem;
+  --spacing-space-xxl: 3rem;
+  --color-primary-container: #ffedd5;
+  --color-on-primary-container: #7c2d12;
+  --color-secondary: #15803d;
+  --color-tertiary: #0f766e;
+  --color-surface-container-highest: #e7e5e4;
+  --color-outline-variant: #d6d3d1;
+
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-lg: 1.5rem;
+
+  --font-headline-sm: ui-sans-serif, system-ui, sans-serif;
+  --font-title-md: ui-sans-serif, system-ui, sans-serif;
+  --font-body-md: ui-sans-serif, system-ui, sans-serif;
+  --font-body-sm: ui-sans-serif, system-ui, sans-serif;
+  --font-label-xs: ui-sans-serif, system-ui, sans-serif;
+  --font-label-md: ui-sans-serif, system-ui, sans-serif;
+
+  --text-headline-sm: 1.25rem;
+  --text-title-md: 1rem;
+  --text-body-md: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-label-xs: 0.75rem;
+  --text-label-md: 0.875rem;
+  /* Trang tìm quán */
+  --color-brand-primary: #a85c1f;
+  --color-brand-primaryHover: #8d4a19;
+  --color-brand-dark: #30261e;
+  --color-brand-muted: #80766c;
+  --color-brand-border: #e9dfd3;
+  --color-brand-warmCard: #fbf5ec;
+
+  /* Trang chủ và các trang dùng bảng màu surface */
+  --color-background: #faf8f4;
+  --color-on-background: #2b241e;
+  --color-surface: #fffdfa;
+  --color-surface-bright: #fffdfa;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container: #f0ebe4;
+
+  --color-on-primary: #ffffff;
+  --color-primary-fixed: #f6c66d;
+  --color-on-primary-fixed: #4b2b00;
+  --color-secondary-fixed: #e4ead9;
+  --color-on-secondary-fixed-variant: #34452d;
+  --color-tertiary-fixed-dim: #b8c9c2;
+  --color-outline: #887f75;
+}
