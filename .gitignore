@@ -6,3 +6,6 @@
 FE/node_modules/
 FE/dist/
 FE/.angular/cache/
+BE/.venv/
+.DS_Store
+BE/.DS_Store
