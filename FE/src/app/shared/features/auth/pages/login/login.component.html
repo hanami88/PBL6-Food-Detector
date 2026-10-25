@@ -1,0 +1,224 @@
+<div class="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+  <div class="w-full max-w-6xl min-h-[720px] bg-white rounded-3xl overflow-hidden border border-[#e8e4dd] shadow-[0_24px_60px_rgba(43,38,30,0.12)] grid grid-cols-1 lg:grid-cols-2">
+
+    <!-- LEFT -->
+    <div
+      class="relative hidden lg:flex min-h-[720px] bg-cover bg-center items-end"
+      style="background-image: url('/assets/istockphoto-2166041064-1024x1024.jpg')">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10"></div>
+
+      <div class="relative z-10 w-full p-12 text-white">
+        <div class="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full border border-white/30 bg-white/10 backdrop-blur-md text-xs font-semibold">
+          <i class="fa-solid fa-utensils"></i>
+          <span>Đà Nẵng Food Guide</span>
+        </div>
+
+        <span class="block mb-3 text-xs font-bold tracking-[0.2em] text-white/80">
+          KHÁM PHÁ HƯƠNG VỊ
+        </span>
+
+        <h1 class="text-4xl xl:text-5xl leading-[1.15] font-bold">
+          Mừng bạn trở lại
+          <br />
+          với ẩm thực
+          <span class="text-[#e6b65c]">Đà Nẵng</span>
+        </h1>
+
+        <p class="max-w-md mt-5 text-sm leading-7 text-white/80">
+          Tiếp tục hành trình khám phá những món ăn đặc sắc và những địa điểm
+          ẩm thực tuyệt vời của thành phố biển.
+        </p>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="flex items-center justify-center p-6 sm:p-10 lg:p-12">
+      <div class="w-full max-w-md">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between mb-12">
+          <a
+            routerLink="/"
+            class="inline-flex items-center gap-2.5 text-[#29251f] no-underline"
+          >
+            <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#9f7439] text-white">
+              <i class="fa-solid fa-utensils"></i>
+            </span>
+
+            <span class="flex flex-col leading-none">
+              <strong class="text-base font-extrabold">DaNang</strong>
+              <span class="mt-1 text-[10px] uppercase tracking-[0.08em] text-[#8b8173]">
+                Food Guide
+              </span>
+            </span>
+          </a>
+
+          <a
+            routerLink="/"
+            class="inline-flex items-center gap-1 text-xs text-[#8b8173] hover:text-[#9f7439]"
+          >
+            Về trang chủ
+          </a>
+        </div>
+
+        <!-- TITLE -->
+        <div class="mb-7">
+          <h2 class="mb-2 text-3xl font-bold text-[#29251f]">
+            Chào mừng trở lại!
+          </h2>
+
+          <p class="text-[13px] leading-6 text-[#8b8173]">
+            Đăng nhập để tiếp tục khám phá ẩm thực Đà Nẵng.
+          </p>
+        </div>
+
+        <!-- GOOGLE LOGIN -->
+        <button
+          type="button"
+          (click)="loginWithGoogle()"
+          class="w-full min-h-12 flex items-center justify-center gap-2.5 rounded-[10px] border border-[#ddd8cf] bg-white text-[13px] font-semibold text-[#3c3831] hover:bg-[#faf9f7] hover:border-[#cfc8bd] transition-all"
+        >
+          <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" aria-hidden="true">
+            ...
+          </svg>
+
+          <span>Tiếp tục với Google</span>
+        </button>
+
+        <!-- DIVIDER -->
+        <div class="flex items-center gap-3.5 my-6">
+          <div class="flex-1 h-px bg-[#e8e4dd]"></div>
+          <span class="shrink-0 text-[11px] text-[#a49b8e]">
+            hoặc đăng nhập bằng email
+          </span>
+          <div class="flex-1 h-px bg-[#e8e4dd]"></div>
+        </div>
+
+        <!-- FORM -->
+        <form
+          id="danang-login-form"
+          (ngSubmit)="onSubmit()"
+          class="space-y-5"
+        >
+          <!-- Email -->
+          <div>
+            <label
+              for="identifier-input"
+              class="block mb-2 text-xs font-semibold text-[#403b34]">
+              Email hoặc số điện thoại
+            </label>
+
+            <div class="relative">
+              <input
+                id="identifier-input"
+                name="identifier"
+                [(ngModel)]="identifier"
+                type="text"
+                required
+                autocomplete="username"
+                placeholder="ví dụ@email.com"
+                class="w-full h-12 pl-[10px] pr-4 rounded-[10px] border border-[#ddd8cf] text-[13px] text-[#29251f] placeholder:text-[#b1aaa0] focus:border-[#b88a48] focus:ring-4 focus:ring-[#b88a48]/10 outline-none transition-all"
+              />
+            </div>
+
+            @if (!identifier && loginFormSubmitted) {
+              <small class="mt-1 block text-[11px] text-[#c65c4b]">
+                Vui lòng nhập email hoặc số điện thoại.
+              </small>
+            }
+          </div>
+
+          <!-- Password -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label
+                for="password-input"
+                class="text-xs font-semibold text-[#403b34]">
+                Mật khẩu
+              </label>
+
+              <a routerLink="/auth/forgot-password"
+                 class="text-[11px] font-semibold text-[#9f7439] hover:underline">
+                Quên mật khẩu?
+              </a>
+            </div>
+
+            <div class="relative">
+              <input
+                id="password-input"
+                name="password"
+                [(ngModel)]="password"
+                [type]="showPassword ? 'text' : 'password'"
+                required
+                autocomplete="current-password"
+                placeholder="Nhập mật khẩu"
+                class="w-full h-12 pl-[10px] pr-12 rounded-[10px] border border-[#ddd8cf] text-[13px] text-[#29251f] placeholder:text-[#b1aaa0] focus:border-[#b88a48] focus:ring-4 focus:ring-[#b88a48]/10 outline-none transition-all"
+              />
+
+              <button
+                type="button"
+                (click)="togglePasswordVisibility()"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-md text-[#aaa196] hover:bg-[#f4f1ec] hover:text-[#766d61]"
+              >
+                <span class="material-symbols-outlined text-[18px]">
+<!--                  {{ showPassword ? 'visibility_off' : 'visibility' }}-->
+                  @if (showPassword) {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                  }
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember -->
+          <label class="flex items-center gap-2 text-[11px] text-[#766d61] cursor-pointer">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              [(ngModel)]="rememberMe"
+              class="accent-[#9f7439]"
+            />
+
+            <span>Ghi nhớ đăng nhập</span>
+          </label>
+
+          <!-- Submit -->
+          <button
+            type="submit"
+            [disabled]="isLoading"
+            class="w-full h-[50px] flex items-center justify-center gap-2 rounded-[10px] bg-[#9f7439] text-white text-[13px] font-bold hover:bg-[#8e6630] transition-all"
+          >
+            @if (isLoading) {
+              <span class="w-4 h-4 border-2 border-white/35 border-t-white rounded-full animate-spin"></span>
+              <span>Đang kiểm tra khẩu vị...</span>
+            } @else {
+              <span>Đăng nhập</span>
+
+            }
+          </button>
+        </form>
+
+        <!-- REGISTER -->
+        <div class="flex justify-center gap-1 mt-7 text-xs text-[#8b8173]">
+          <span>Chưa có tài khoản?</span>
+
+          <a
+            routerLink="/auth/register"
+            class="font-bold text-[#9f7439] hover:underline"
+          >
+            Đăng ký tài khoản
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

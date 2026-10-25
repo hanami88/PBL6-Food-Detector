@@ -1,0 +1,178 @@
+<!-- SIDEBAR / MENU -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_8px_24px_-4px_rgba(45,36,34,0.06)]">
+  <div class="flex flex-col">
+    <!-- Brand Logo -->
+    <div class="h-16 px-space-lg flex items-center justify-between">
+      <div class="flex items-center gap-space-sm">
+        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-headline-sm">ĐN</div>
+        <div class="flex flex-col">
+          <span class="font-headline-sm text-headline-sm text-surface tracking-tight leading-none">Đà Nẵng Food</span>
+          <span class="font-label-xs text-label-xs text-outline-variant mt-1 uppercase tracking-wider">Cổng Quản Trị</span>
+        </div>
+      </div>
+    </div>
+    <!-- Server Status -->
+    <div class="px-space-md py-space-sm">
+      <div class="bg-surface-container-highest/10 px-space-md py-space-sm rounded-xl flex items-center justify-between text-surface-container-high">
+        <div class="flex items-center gap-space-sm">
+          <span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+          <span class="font-label-md text-label-md">Máy chủ: Trung tâm</span>
+        </div>
+        <span class="font-label-xs text-label-xs bg-surface-container-highest/20 px-space-xs py-0.5 rounded text-surface-bright">v2.4</span>
+      </div>
+    </div>
+    <!-- Nav Links -->
+    <nav class="flex flex-col gap-1.5 px-space-md mt-space-sm">
+      @for (nav of navItems; track nav.path) {
+        <a [href]="'/' + nav.path" [ngClass]="nav.isActive ? 'bg-primary text-on-primary' : 'text-inverse-on-surface hover:bg-surface-container-highest/15 hover:text-surface'"
+           class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl transition-all">
+          <span class="material-symbols-outlined text-[20px]">{{ nav.icon }}</span>
+          <span class="font-label-lg text-label-lg">{{ nav.label }}</span>
+        </a>
+      }
+    </nav>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="p-space-md">
+    <div class="bg-surface-container-highest/10 rounded-xl p-space-md flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between">
+        <span class="font-label-xs text-label-xs uppercase tracking-wider text-outline-variant">Kênh công khai</span>
+        <span class="material-symbols-outlined text-secondary-fixed text-[18px]">check_circle</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-surface-container-high">Xem trạng thái trải nghiệm thực tế của thực khách.</p>
+      <a href="#" class="inline-flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md hover:bg-primary-fixed-dim transition-colors">
+        <span class="material-symbols-outlined text-[16px]">open_in_new</span> Mở trang cẩm nang
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER CỦA LAYOUT -->
+<div class="pl-72">
+
+  <!-- HEADER -->
+  <header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(45,36,34,0.04)] z-40 flex items-center justify-between px-gutter">
+    <div class="flex items-center gap-space-md w-96">
+      <div class="relative w-full">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+        <input [(ngModel)]="searchQuery" type="text" class="w-full pl-10 pr-4 py-2 bg-surface-container-low rounded-full text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Tìm kiếm quán, món ăn, mã duyệt..." />
+      </div>
+    </div>
+    <div class="flex items-center gap-space-md">
+      <a href="#" class="hidden sm:flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[18px]">store</span><span>Xem cổng portal</span>
+      </a>
+      <button type="button" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary"></span>
+      </button>
+      <div class="h-6 w-px bg-surface-container-high mx-space-xs"></div>
+      <div class="flex items-center gap-space-sm pl-space-xs">
+        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </div>
+        <div class="hidden md:flex flex-col text-left">
+          <span class="font-label-md text-label-md text-on-surface leading-tight">{{ userName }}</span>
+          <span class="font-label-xs text-label-xs text-on-surface-variant">{{ userRole }}</span>
+        </div>
+        <button type="button" class="p-1 text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">expand_more</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- SIDEBAR / MENU -->
+  <aside class="fixed left-0 top-0 h-full w-72 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_8px_24px_-4px_rgba(45,36,34,0.06)]">
+    <div class="flex flex-col">
+      <!-- Brand Logo -->
+      <div class="h-16 px-space-lg flex items-center justify-between">
+        <div class="flex items-center gap-space-sm">
+          <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-sm text-headline-sm">ĐN</div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm text-surface tracking-tight leading-none">Đà Nẵng Food</span>
+            <span class="font-label-xs text-label-xs text-outline-variant mt-1 uppercase tracking-wider">Cổng Quản Trị</span>
+          </div>
+        </div>
+      </div>
+      <!-- Server Status -->
+      <div class="px-space-md py-space-sm">
+        <div class="bg-surface-container-highest/10 px-space-md py-space-sm rounded-xl flex items-center justify-between text-surface-container-high">
+          <div class="flex items-center gap-space-sm">
+            <span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+            <span class="font-label-md text-label-md">Máy chủ: Trung tâm</span>
+          </div>
+          <span class="font-label-xs text-label-xs bg-surface-container-highest/20 px-space-xs py-0.5 rounded text-surface-bright">v2.4</span>
+        </div>
+      </div>
+      <!-- Nav Links -->
+      <nav class="flex flex-col gap-1.5 px-space-md mt-space-sm">
+        @for (nav of navItems; track nav.path) {
+          <a [href]="'/' + nav.path" [ngClass]="nav.isActive ? 'bg-primary text-on-primary' : 'text-inverse-on-surface hover:bg-surface-container-highest/15 hover:text-surface'"
+             class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl transition-all">
+            <span class="material-symbols-outlined text-[20px]">{{ nav.icon }}</span>
+            <span class="font-label-lg text-label-lg">{{ nav.label }}</span>
+          </a>
+        }
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-space-md">
+      <div class="bg-surface-container-highest/10 rounded-xl p-space-md flex flex-col gap-space-sm">
+        <div class="flex items-center justify-between">
+          <span class="font-label-xs text-label-xs uppercase tracking-wider text-outline-variant">Kênh công khai</span>
+          <span class="material-symbols-outlined text-secondary-fixed text-[18px]">check_circle</span>
+        </div>
+        <p class="font-body-sm text-body-sm text-surface-container-high">Xem trạng thái trải nghiệm thực tế của thực khách.</p>
+        <a href="#" class="inline-flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md hover:bg-primary-fixed-dim transition-colors">
+          <span class="material-symbols-outlined text-[16px]">open_in_new</span> Mở trang cẩm nang
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER CỦA LAYOUT -->
+  <div class="pl-72">
+
+    <!-- HEADER -->
+    <header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(45,36,34,0.04)] z-40 flex items-center justify-between px-gutter">
+      <div class="flex items-center gap-space-md w-96">
+        <div class="relative w-full">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+          <input [(ngModel)]="searchQuery" type="text" class="w-full pl-10 pr-4 py-2 bg-surface-container-low rounded-full text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Tìm kiếm quán, món ăn, mã duyệt..." />
+        </div>
+      </div>
+      <div class="flex items-center gap-space-md">
+        <a href="#" class="hidden sm:flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined text-[18px]">store</span><span>Xem cổng portal</span>
+        </a>
+        <button type="button" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[22px]">notifications</span>
+          <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary"></span>
+        </button>
+        <div class="h-6 w-px bg-surface-container-high mx-space-xs"></div>
+        <div class="flex items-center gap-space-sm pl-space-xs">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+          </div>
+          <div class="hidden md:flex flex-col text-left">
+            <span class="font-label-md text-label-md text-on-surface leading-tight">{{ userName }}</span>
+            <span class="font-label-xs text-label-xs text-on-surface-variant">{{ userRole }}</span>
+          </div>
+          <button type="button" class="p-1 text-on-surface-variant hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">expand_more</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT CỦA CÁC TRANG SẼ ĐƯỢC NHÚNG VÀO ĐÂY -->
+    <router-outlet></router-outlet>
+
+  </div>
+
+  <!-- CONTENT CỦA CÁC TRANG SẼ ĐƯỢC NHÚNG VÀO ĐÂY -->
+  <router-outlet></router-outlet>
+
+</div>
