@@ -85,9 +85,9 @@
   <section class="mx-auto w-full max-w-[1280px] px-gutter py-space-lg">
     <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <span class="font-label-xs uppercase tracking-wider text-primary">Gợi ý địa điểm từ Google Maps</span>
+        <span class="font-label-xs uppercase tracking-wider text-primary">Địa điểm từ OpenStreetMap</span>
         <h2 class="mt-1 font-headline-lg text-on-surface">Món ngon nổi bật</h2>
-        <p class="mt-1 text-on-surface-variant">Tên món dùng làm từ khóa tìm kiếm; địa điểm và xếp hạng được gợi ý từ Google Maps.</p>
+        <p class="mt-1 text-on-surface-variant">Tên món được dùng làm từ khóa tìm địa điểm trên OpenStreetMap; dữ liệu đánh giá không có sẵn.</p>
       </div>
       <a routerLink="/food-search" class="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Xem tất cả món ăn <i class="fa-solid fa-arrow-right"></i></a>
     </div>
@@ -117,8 +117,12 @@
               <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span class="font-bold text-primary">{{ formatPrice(food.average_price) }}</span>
                 <span class="inline-flex items-center gap-1 text-on-surface-variant">
-                  <i class="fa-solid fa-star text-[17px] text-tertiary"></i>
-                  {{ food.average_rating | number:'1.1-1' }} <span>({{ food.review_count }})</span>
+                  @if (food.average_rating !== null && food.review_count > 0) {
+                    <i class="fa-solid fa-star text-[17px] text-tertiary"></i>
+                    {{ food.average_rating | number:'1.1-1' }} <span>({{ food.review_count }})</span>
+                  } @else {
+                    <span>Chưa có đánh giá</span>
+                  }
                 </span>
               </div>
               <p class="mt-3 border-t border-outline-variant/30 pt-3 text-xs text-on-surface-variant">
@@ -165,9 +169,9 @@
     <div class="mx-auto w-full max-w-[1280px] px-gutter">
       <div class="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <span class="font-label-xs uppercase tracking-wider text-primary">Dữ liệu địa điểm từ Google Maps</span>
+          <span class="font-label-xs uppercase tracking-wider text-primary">Địa điểm từ OpenStreetMap</span>
           <h2 class="mt-1 font-headline-lg text-on-surface">Quán ngon gần bạn</h2>
-          <p class="mt-1 text-on-surface-variant">Google Maps gợi ý {{ restaurantCount }} địa điểm{{ selectedDistrict ? ' tại ' + selectedDistrict : ' ở Đà Nẵng' }}.</p>
+          <p class="mt-1 text-on-surface-variant">{{ restaurantCount }} địa điểm OpenStreetMap{{ selectedDistrict ? ' tại ' + selectedDistrict : ' ở Đà Nẵng' }}.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           @for (district of districts; track district) {
@@ -194,7 +198,11 @@
                   <span class="block truncate font-title-md text-on-surface">{{ restaurant.name }}</span>
                   <span class="block truncate text-xs text-on-surface-variant">{{ restaurant.district || restaurant.address }}</span>
                   <span class="mt-1 flex flex-wrap gap-x-3 text-xs text-on-surface-variant">
-                    <span class="text-tertiary">★ {{ restaurant.average_rating | number:'1.1-1' }} ({{ restaurant.review_count }})</span>
+                    @if (restaurant.average_rating !== null && restaurant.review_count > 0) {
+                      <span class="text-tertiary">★ {{ restaurant.average_rating | number:'1.1-1' }} ({{ restaurant.review_count }})</span>
+                    } @else {
+                      <span>Chưa có đánh giá</span>
+                    }
                     <span>{{ formatPrice(restaurant.min_price) }}</span>
                     @if (restaurant.distance_km !== null) { <span>{{ restaurant.distance_km }} km</span> }
                   </span>
@@ -215,6 +223,8 @@
                   src="https://www.openstreetmap.org/export/embed.html?bbox=108.12%2C15.95%2C108.32%2C16.15&amp;layer=mapnik&amp;marker=16.0678%2C108.2208"></iframe>
           <a href="https://www.openstreetmap.org/?mlat=16.0678&amp;mlon=108.2208#map=13/16.0678/108.2208" target="_blank" rel="noopener noreferrer"
              class="absolute bottom-3 right-3 rounded-full bg-surface-container-lowest/95 px-4 py-2 text-xs font-semibold text-on-surface shadow">Mở bản đồ lớn ↗</a>
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer"
+             class="absolute bottom-3 left-3 rounded-full bg-surface-container-lowest/95 px-3 py-1.5 text-[10px] text-on-surface shadow">© OpenStreetMap contributors</a>
         </div>
       </div>
     </div>

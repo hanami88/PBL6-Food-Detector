@@ -19,7 +19,7 @@ interface HomeFood {
   category: string | null;
   image_url: string | null;
   average_price: number | null;
-  average_rating: number;
+  average_rating: number | null;
   review_count: number;
   restaurants: Array<{ id: number; name: string; address: string; price: number | null }>;
 }
@@ -33,7 +33,7 @@ interface HomeRestaurant {
   image_url: string | null;
   latitude: number | null;
   longitude: number | null;
-  average_rating: number;
+  average_rating: number | null;
   review_count: number;
   min_price: number | null;
   distance_km: number | null;
@@ -101,8 +101,8 @@ export class HomeComponent implements OnInit {
     } catch (error: unknown) {
       if (requestId !== this.requestId) return;
       this.errorMessage = error instanceof HttpErrorResponse
-        ? error.error?.detail || 'Không thể tải dữ liệu Google Maps. Vui lòng thử lại.'
-        : 'Không thể tải dữ liệu Google Maps. Vui lòng thử lại.';
+        ? error.error?.detail || 'Không thể tải dữ liệu địa điểm. Vui lòng thử lại.'
+        : 'Không thể tải dữ liệu địa điểm. Vui lòng thử lại.';
       this.categories = [];
       this.featuredFoods = [];
       this.popularFoods = [];
@@ -154,8 +154,8 @@ export class HomeComponent implements OnInit {
   }
 
   openRestaurant(restaurant: HomeRestaurant): void {
-    const mapsUrl = restaurant.maps_url
-      || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${restaurant.name} ${restaurant.address}`)}`;
-    window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+    const mapUrl = restaurant.maps_url
+      || `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${restaurant.name} ${restaurant.address}`)}`;
+    window.open(mapUrl, '_blank', 'noopener,noreferrer');
   }
 }
