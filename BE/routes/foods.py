@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from math import ceil, radians, sin, cos, asin, sqrt
-from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, or_, select
@@ -294,79 +293,65 @@ def list_food_categories(db: Session = Depends(get_db)):
 @router.get("/search", response_model=FoodSearchResponse)
 def search_foods(
     q: str = Query(default="", max_length=100),
-    category: str | None = Query(default=None, max_length=100),
-    sort: Literal["recommended", "rating", "price_asc", "price_desc"] = "recommended",
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1, le=50),
-    db: Session = Depends(get_db),
 ):
-    rating = (
-        select(func.coalesce(func.avg(Review.rating), 0))
-        .where(Review.food_id == Food.id)
-        .correlate(Food)
-        .scalar_subquery()
-    )
-    review_count = (
-        select(func.count(Review.id))
-        .where(Review.food_id == Food.id)
-        .correlate(Food)
-        .scalar_subquery()
-    )
-
-    statement = (
-        select(Food, Category.name, rating, review_count)
-        .outerjoin(Category, Category.id == Food.category_id)
-        .where(Food.status == "PUBLISHED")
-    )
-
     terms = [term.strip() for term in q.split(",") if term.strip()]
-    if terms:
-        statement = statement.where(
-            or_(
-                *[
-                    or_(
-                        Food.name.ilike(f"%{term}%"),
-                        Food.short_description.ilike(f"%{term}%"),
-                        Food.description.ilike(f"%{term}%"),
-                        Food.origin.ilike(f"%{term}%"),
-                        Category.name.ilike(f"%{term}%"),
-                        Food.restaurants.any(Restaurant.name.ilike(f"%{term}%")),
-                    )
-                    for term in terms
-                ]
+    if not terms:
+        terms = ["quán ăn Đà Nẵng"]
+
+    def search_term(term: str) -> tuple[str, list[dict]]:
+        try:
+            places = search_osm_places(
+                f"{term}, Đà Nẵng, Việt Nam",
+                max_results=6,
+                restaurant_only=True,
+            )
+        except OSMPlacesError as error:
+            raise HTTPException(status_code=502, detail=str(error)) from error
+        return term, places
+
+    with ThreadPoolExecutor(max_workers=min(6, len(terms))) as executor:
+        search_results = list(executor.map(search_term, terms))
+
+    items = []
+    for term, places in search_results:
+        restaurants = [
+            FoodRestaurantResult(
+                id=index,
+                name=place.get("name") or "Quán ăn",
+                address=place.get("address") or "Đà Nẵng",
+                image_url=None,
+                price=None,
+                osm_place=OSMPlaceInfo(**place),
+            )
+            for index, place in enumerate(places, start=1)
+        ]
+        if not restaurants:
+            continue
+        items.append(
+            FoodSearchItem(
+                id=len(items) + 1,
+                name=term,
+                description="Địa điểm khớp từ khóa trên OpenStreetMap; vui lòng xác nhận quán có phục vụ món này.",
+                category="OpenStreetMap",
+                image_url=None,
+                average_price=None,
+                average_rating=None,
+                review_count=0,
+                restaurants=restaurants,
             )
         )
 
-    if category:
-        statement = statement.where(Category.name == category)
+    total = len(items)
+    items = items[(page - 1) * page_size : page * page_size]
 
-    count_statement = select(func.count()).select_from(statement.order_by(None).subquery())
-    total = db.scalar(count_statement) or 0
-
-    if sort == "rating":
-        statement = statement.order_by(rating.desc(), review_count.desc())
-    elif sort == "price_asc":
-        statement = statement.order_by(
-            Food.average_price.is_(None).asc(),
-            Food.average_price.asc(),
-        )
-    elif sort == "price_desc":
-        statement = statement.order_by(
-            Food.average_price.is_(None).asc(),
-            Food.average_price.desc(),
-        )
-    else:
-        statement = statement.order_by(Food.is_featured.desc(), rating.desc())
-
-    rows = db.execute(
-        statement.offset((page - 1) * page_size).limit(page_size)
-    ).all()
-    items = _food_items(db, rows, include_osm_places=True)
-
-    return FoodSearchResponse(
+    response = FoodSearchResponse(
         items=items,
         total=total,
         page=page,
         page_size=page_size,
         total_pages=ceil(total / page_size),
     )
+    logger.info("External food search response:\n%s", response.model_dump_json(indent=2))
+    return response

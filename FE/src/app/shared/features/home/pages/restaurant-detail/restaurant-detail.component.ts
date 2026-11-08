@@ -291,12 +291,12 @@ export class RestaurantDetailComponent implements OnInit {
   }
 
   directionsUrl(): string {
-    if (!this.restaurant) return 'https://www.openstreetmap.org';
-    if (this.restaurant.latitude !== null && this.restaurant.longitude !== null) {
-      const { latitude, longitude } = this.restaurant;
-      return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}`;
-    }
-    return `https://www.openstreetmap.org/search?query=${encodeURIComponent(this.restaurant.address)}`;
+    if (!this.restaurant) return 'https://www.google.com/maps';
+    const destination = this.restaurant.latitude !== null && this.restaurant.longitude !== null
+      ? `${this.restaurant.latitude},${this.restaurant.longitude}`
+      : `${this.restaurant.name}, ${this.restaurant.address}`;
+    const params = new URLSearchParams({ api: '1', destination });
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
   }
 
   mapEmbedUrl(): SafeResourceUrl | null {

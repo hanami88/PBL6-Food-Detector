@@ -154,8 +154,10 @@ export class HomeComponent implements OnInit {
   }
 
   openRestaurant(restaurant: HomeRestaurant): void {
-    const mapUrl = restaurant.maps_url
-      || `https://www.openstreetmap.org/search?query=${encodeURIComponent(`${restaurant.name} ${restaurant.address}`)}`;
-    window.open(mapUrl, '_blank', 'noopener,noreferrer');
+    const params = new URLSearchParams({
+      api: '1',
+      query: `${restaurant.name}, ${restaurant.address}`,
+    });
+    window.open(`https://www.google.com/maps/search/?${params.toString()}`, '_blank', 'noopener,noreferrer');
   }
 }

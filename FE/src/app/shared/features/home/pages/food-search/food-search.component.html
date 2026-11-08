@@ -1,131 +1,166 @@
-<main class="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-6">
-  <header class="mb-6 border-b border-brand-border pb-6">
-    <div class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+<main class="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8">
+
+  <!-- ====================================== -->
+  <!-- HEADER / SEARCH -->
+  <!-- ====================================== -->
+
+  <section class="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-warm-sm">
+
+    <div class="grid items-center gap-8 p-5 sm:p-8 lg:grid-cols-[1fr_1.1fr] lg:p-10">
+
+      <!-- Introduction -->
       <div>
-        <span
-          class="mb-2 inline-flex items-center gap-2 rounded-lg bg-brand-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-primary"
-        >
+        <span class="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-primary">
           <i class="fa-solid fa-utensils" aria-hidden="true"></i>
           Khám phá ẩm thực Đà Nẵng
         </span>
-        <h1 class="text-3xl font-extrabold tracking-tight text-brand-dark md:text-4xl">
-          Tìm món ngon quanh bạn
+        <h1 class="max-w-xl text-3xl font-extrabold leading-tight tracking-tight text-brand-dark sm:text-4xl lg:text-5xl">
+          Khám phá món ngon quanh bạn
         </h1>
-        <p class="mt-1.5 text-sm font-medium text-brand-muted">
-          Tìm món ăn, xem giá tham khảo và những quán đang phục vụ món đó.
+        <p class="mt-4 max-w-lg text-sm leading-relaxed text-brand-muted sm:text-base">
+          Tìm kiếm các món ăn đặc sản, khám phá địa điểm ăn uống hoặc sử dụng AI để nhận diện món ăn từ hình ảnh.
         </p>
       </div>
 
-      <div class="w-full md:max-w-xl">
-        <div class="relative flex items-center">
-          <i
-            class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 text-brand-muted"
-            aria-hidden="true"
-          ></i>
-          <input
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="onSearch()"
-            class="w-full rounded-2xl border border-brand-border bg-white py-3.5 pl-11 pr-28 text-sm font-medium text-brand-dark shadow-warm-sm transition focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-            placeholder="Tìm tên món, nguyên liệu hoặc mô tả..."
-            aria-label="Từ khóa tìm món ăn"
-            type="search"
-          />
-          <input
-            #imagePicker
-            (change)="onImageSelected($event)"
-            accept="image/*"
-            class="hidden"
-            type="file"
-            aria-label="Chọn ảnh món ăn"
-          />
-          <button
-            type="button"
-            (click)="imagePicker.click()"
-            class="absolute right-24 flex h-9 w-9 items-center justify-center rounded-xl text-brand-muted transition hover:bg-brand-warmCard hover:text-brand-primary"
-            aria-label="Tìm món bằng hình ảnh"
-            title="Chọn ảnh hoặc dán ảnh bằng Ctrl+V"
-          >
-            <i class="fa-solid fa-camera" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            (click)="onSearch()"
-            [disabled]="isSearching || isAnalyzing"
-            class="absolute right-2 inline-flex items-center gap-2 rounded-xl bg-brand-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-primaryHover disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            @if (isSearching || isAnalyzing) {
-              <i class="fa-solid fa-spinner animate-spin" aria-hidden="true"></i>
-              <span>Đang tìm</span>
-            } @else {
-              <span>Tìm kiếm</span>
-            }
-          </button>
+      <!-- Search -->
+      <div class="w-full">
+        <form (ngSubmit)="onSearch()">
+          <div class="relative flex items-center">
+            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 text-brand-muted" aria-hidden="true"></i>
+            <input
+              [(ngModel)]="searchQuery"
+              name="searchQuery"
+              type="search"
+              placeholder="Tìm tên món, nguyên liệu..."
+              aria-label="Từ khóa tìm món ăn"
+              class="w-full rounded-2xl border border-brand-border bg-brand-warmCard/40 py-4 pl-11 pr-32 text-sm font-medium text-brand-dark transition focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+            />
+
+            <!-- Image Picker -->
+            <input
+              #imagePicker
+              type="file"
+              accept="image/*"
+              class="hidden"
+              aria-label="Chọn ảnh món ăn"
+              (change)="onImageSelected($event)"
+            />
+
+            <button
+              type="button"
+              (click)="imagePicker.click()"
+              title="Chọn ảnh món ăn"
+              aria-label="Tìm món bằng hình ảnh"
+              class="absolute right-[105px] flex h-9 w-9 items-center justify-center rounded-xl text-brand-muted transition hover:bg-brand-primary/10 hover:text-brand-primary"
+            >
+              <i class="fa-solid fa-camera text-lg" aria-hidden="true"></i>
+            </button>
+
+            <!-- Search Button -->
+            <button
+              type="submit"
+              [disabled]="isSearching || isAnalyzing"
+              class="absolute right-2 inline-flex items-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-primaryHover disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
+            >
+              @if (isSearching || isAnalyzing) {
+                <i class="fa-solid fa-spinner animate-spin" aria-hidden="true"></i>
+                <span>Đang tìm</span>
+              } @else {
+                <span>Tìm kiếm</span>
+              }
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-3 flex items-start gap-2 text-xs leading-relaxed text-brand-muted">
+          <i class="fa-regular fa-image mt-0.5 text-brand-primary" aria-hidden="true"></i>
+          <span>Bạn có thể chọn ảnh hoặc dán ảnh bằng Ctrl + V để AI nhận diện món ăn.</span>
         </div>
-        <p class="mt-2 text-xs text-brand-muted">
-          <i class="fa-regular fa-image mr-1 text-brand-primary" aria-hidden="true"></i>
-          Có thể dán ảnh bằng Ctrl+V hoặc chọn ảnh để AI nhận diện món ăn.
-        </p>
+
+        <!-- Quick Search -->
+        <div class="mt-5">
+          <p class="mb-2 text-xs font-bold text-brand-dark">Gợi ý tìm kiếm</p>
+          <div class="flex flex-wrap gap-2">
+            @for (keyword of ['Mì Quảng', 'Bánh tráng cuốn thịt heo', 'Ốc hút', 'Bún chả cá', 'Bê thui']; track keyword) {
+              <button
+                type="button"
+                (click)="onQuickSearch(keyword)"
+                [disabled]="isSearching || isAnalyzing"
+                class="rounded-full border border-brand-border bg-white px-3 py-1.5 text-xs font-medium text-brand-muted transition hover:border-brand-primary hover:bg-brand-primary/5 hover:text-brand-primary disabled:opacity-50"
+              >
+                {{ keyword }}
+              </button>
+            }
+          </div>
+        </div>
       </div>
     </div>
-  </header>
+
+    <!-- Bottom Decoration -->
+    <div class="h-1 w-full bg-gradient-to-r from-brand-primary/20 via-brand-primary to-brand-primary/20"></div>
+
+  </section>
+
+  <!-- ====================================== -->
+  <!-- AI IMAGE DETECTION -->
+  <!-- ====================================== -->
 
   @if (imagePreviewUrl) {
-    <section
-      class="mb-7 rounded-3xl border border-brand-border bg-white p-4 shadow-warm-md md:p-6"
-      aria-label="Kết quả nhận diện món ăn"
-    >
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-brand-border pb-4">
+
+    <section class="mt-7 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-warm-sm">
+      <!-- AI Header -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-brand-border p-5 sm:px-6">
         <div class="flex items-center gap-3">
-          <span
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary"
-          >
-            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+          <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+            <i class="fa-solid fa-wand-magic-sparkles text-lg" aria-hidden="true"></i>
           </span>
           <div>
             <h2 class="font-extrabold text-brand-dark">Nhận diện món ăn bằng AI</h2>
-            <p class="text-xs text-brand-muted" aria-live="polite">
-              {{ searchStatus || 'Đang chuẩn bị phân tích hình ảnh...' }}
+            <p class="mt-1 text-xs text-brand-muted" aria-live="polite">
+              {{ searchStatus || 'Đang chuẩn bị hình ảnh...' }}
             </p>
           </div>
         </div>
+
         <div class="flex gap-2">
           <button
             type="button"
             (click)="imagePicker.click()"
             class="rounded-xl border border-brand-border px-3 py-2 text-xs font-bold text-brand-dark transition hover:bg-brand-warmCard"
           >
-            Đổi ảnh
+            <i class="fa-solid fa-image mr-1" aria-hidden="true"></i> Đổi ảnh
           </button>
           <button
             type="button"
             (click)="removePastedImage()"
             class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
           >
-            Đóng
+            <i class="fa-solid fa-xmark mr-1" aria-hidden="true"></i> Đóng
           </button>
         </div>
       </div>
 
-      <div class="grid items-start gap-5 lg:grid-cols-2">
-        <div class="relative flex min-h-64 items-center justify-center overflow-hidden rounded-2xl bg-stone-900 p-3">
+      <!-- AI Content -->
+      <div class="grid items-start gap-6 p-4 sm:p-6 lg:grid-cols-2">
+
+        <!-- IMAGE PREVIEW -->
+        <div class="flex min-h-64 items-center justify-center overflow-hidden rounded-2xl bg-stone-900 p-3">
           <div class="relative inline-block max-w-full select-none">
-            <img
-              [src]="imagePreviewUrl"
-              alt="Ảnh món ăn đang được AI nhận diện"
-              class="block max-h-[440px] w-auto rounded-lg"
-            />
+            <img [src]="imagePreviewUrl" alt="Ảnh đang nhận diện" class="block max-h-[460px] w-auto rounded-lg" />
+
+            <!-- Loading Overlay -->
             @if (isAnalyzing) {
-              <div
-                class="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-stone-900/70 text-white"
-                role="status"
-              >
+              <div class="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-stone-900/75 text-white" role="status">
                 <i class="fa-solid fa-spinner mb-3 animate-spin text-3xl" aria-hidden="true"></i>
                 <span class="text-sm font-bold">AI đang phân tích ảnh...</span>
+                <span class="mt-2 text-xs text-white/70">Vui lòng chờ trong giây lát</span>
               </div>
             }
+
+            <!-- DETECTION BOUNDING BOXES -->
             @if (!isAnalyzing && predictionResult?.success) {
               <div class="pointer-events-none absolute inset-0">
-                @for (dish of predictionResult.dishes; track dish.order) {
+                @for (dish of predictionResult?.dishes || []; track dish.order) {
                   <button
                     type="button"
                     (click)="selectDetectedDish(dish)"
@@ -141,10 +176,7 @@
                     class="pointer-events-auto absolute rounded-md border-2 transition-opacity"
                     [attr.aria-label]="'Chọn ' + dish.display_name"
                   >
-                    <span
-                      [style.backgroundColor]="dish.color"
-                      class="absolute -top-6 left-0 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
-                    >
+                    <span [style.backgroundColor]="dish.color" class="absolute -top-6 left-0 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
                       #{{ dish.order }} {{ dish.display_name }} · {{ dish.confidence }}%
                     </span>
                   </button>
@@ -154,247 +186,264 @@
           </div>
         </div>
 
-        <div>
+        <!-- DETECTION RESULT -->
+        <div class="min-w-0">
           @if (isAnalyzing) {
-            <div class="space-y-3" aria-label="Đang tải kết quả">
-              <div class="h-16 animate-pulse rounded-2xl bg-stone-100"></div>
+            <div class="space-y-3">
               <div class="h-16 animate-pulse rounded-2xl bg-stone-100"></div>
               <div class="h-16 animate-pulse rounded-2xl bg-stone-100"></div>
             </div>
-          } @else if (predictionResult?.success) {
-            <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-brand-muted">
-              {{ predictionResult.total_dishes }} món được nhận diện
-            </h3>
-            <div class="max-h-[400px] space-y-2 overflow-y-auto">
-              @for (dish of predictionResult.dishes; track dish.order) {
-                <button
-                  type="button"
-                  (click)="selectDetectedDish(dish)"
-                  (mouseenter)="hoveredDishOrder = dish.order"
-                  (mouseleave)="hoveredDishOrder = null"
-                  [style.borderColor]="selectedDishOrder === dish.order ? dish.color : ''"
-                  class="flex w-full items-center gap-3 rounded-2xl border border-brand-border bg-white p-3 text-left transition hover:bg-stone-50"
-                >
-                  <span
-                    [style.backgroundColor]="dish.color"
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold text-white"
-                  >
-                    #{{ dish.order }}
-                  </span>
-                  <span class="min-w-0 flex-1">
-                    <span class="block truncate text-sm font-bold text-brand-dark">
-                      {{ dish.display_name }}
-                    </span>
-                    <span class="text-xs text-brand-muted">{{ dish.class_name }}</span>
-                  </span>
-                  <span [style.color]="dish.color" class="text-sm font-extrabold">
-                    {{ dish.confidence }}%
-                  </span>
-                </button>
+          } @else if (predictionResult) {
+
+            @if (predictionResult?.success) {
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wide text-brand-muted">
+                  {{ predictionResult?.total_dishes || 0 }} món được nhận diện
+                </h3>
+                <span class="rounded-full bg-green-50 px-3 py-1 text-[11px] font-bold text-green-700">
+                  <i class="fa-solid fa-check mr-1" aria-hidden="true"></i> Hoàn tất
+                </span>
+              </div>
+
+              <!-- Dish List -->
+              @if ((predictionResult?.dishes?.length || 0) > 0) {
+                <div class="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+                  @for (dish of predictionResult?.dishes || []; track dish.order) {
+                    <button
+                      type="button"
+                      (click)="selectDetectedDish(dish)"
+                      (mouseenter)="hoveredDishOrder = dish.order"
+                      (mouseleave)="hoveredDishOrder = null"
+                      [style.borderColor]="selectedDishOrder === dish.order ? dish.color : ''"
+                      [class.bg-stone-50]="selectedDishOrder === dish.order"
+                      class="flex w-full items-center gap-3 rounded-2xl border border-brand-border bg-white p-3 text-left transition hover:bg-stone-50"
+                    >
+                      <span [style.backgroundColor]="dish.color" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold text-white">
+                        #{{ dish.order }}
+                      </span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block truncate text-sm font-bold text-brand-dark">{{ dish.display_name }}</span>
+                        <span class="text-xs text-brand-muted">{{ dish.class_name }}</span>
+                      </span>
+                      <span [style.color]="dish.color" class="shrink-0 text-sm font-extrabold">{{ dish.confidence }}%</span>
+                    </button>
+                  }
+                </div>
+                <p class="mt-4 rounded-xl bg-brand-primary/5 p-3 text-xs leading-relaxed text-brand-muted">
+                  <i class="fa-solid fa-circle-info mr-1 text-brand-primary" aria-hidden="true"></i>
+                  Chọn một món để tìm các địa điểm đang phục vụ món đó.
+                </p>
+              } @else {
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <p class="text-sm font-bold text-amber-800">Không phát hiện món ăn nào.</p>
+                </div>
               }
-            </div>
-            <p class="mt-3 text-xs text-brand-muted">
-              Chọn món để lọc kết quả bên dưới.
-            </p>
-          } @else if (predictionResult?.require_retake) {
-            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-              <h3 class="font-extrabold text-amber-900">Ảnh chưa rõ món ăn</h3>
-              <p class="mt-2 text-sm text-amber-800">{{ predictionResult.message }}</p>
-              <p class="mt-3 text-xs text-amber-800">
-                Hãy chụp gần hơn, đủ sáng và tránh để món ăn bị che khuất.
-              </p>
-            </div>
+
+            } @else if (predictionResult?.require_retake) {
+              <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <div class="mb-3 flex items-center gap-2 text-amber-900">
+                  <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                  <h3 class="font-extrabold">Ảnh chưa rõ món ăn</h3>
+                </div>
+                <p class="text-sm leading-relaxed text-amber-800">{{ predictionResult?.message }}</p>
+              </div>
+            } @else {
+              <div class="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+                <div class="flex items-center gap-2 text-rose-800">
+                  <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                  <h3 class="font-bold">Không thể nhận diện ảnh</h3>
+                </div>
+                <p class="mt-2 text-sm text-rose-700">{{ predictionResult?.message || searchStatus }}</p>
+              </div>
+            }
+
           } @else {
-            <p class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-              {{ searchStatus }}
-            </p>
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+              <h3 class="font-bold text-rose-800">Không thể nhận diện ảnh</h3>
+              <p class="mt-2 text-sm text-rose-700">{{ searchStatus || 'Đã xảy ra lỗi khi phân tích.' }}</p>
+            </div>
           }
         </div>
       </div>
     </section>
   }
 
-  <section aria-label="Danh sách món ăn">
-    @if (categoryError) {
-      <p class="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800" role="status">
-        Không tải được danh mục món ăn: {{ categoryError }}
-      </p>
-    }
-    <div class="mb-4 flex flex-col gap-3">
-      <div class="flex gap-2 overflow-x-auto pb-1">
-        <button
-          type="button"
-          (click)="selectCategory('')"
-          [class.bg-brand-primary]="!selectedCategory"
-          [class.text-white]="!selectedCategory"
-          [class.bg-white]="selectedCategory"
-          [class.text-brand-dark]="selectedCategory"
-          class="whitespace-nowrap rounded-full border border-brand-border px-4 py-2 text-xs font-bold transition hover:border-brand-primary"
-        >
-          Tất cả món
-        </button>
-        @for (category of categories; track category) {
-          <button
-            type="button"
-            (click)="selectCategory(category)"
-            [class.bg-brand-primary]="selectedCategory === category"
-            [class.text-white]="selectedCategory === category"
-            [class.bg-white]="selectedCategory !== category"
-            [class.text-brand-dark]="selectedCategory !== category"
-            class="whitespace-nowrap rounded-full border border-brand-border px-4 py-2 text-xs font-bold transition hover:border-brand-primary"
-          >
-            {{ category }}
-          </button>
-        }
-      </div>
+  <!-- ====================================== -->
+  <!-- FOOD RESULTS -->
+  <!-- ====================================== -->
 
-      <div class="flex flex-wrap items-center justify-between gap-3 border-y border-brand-border/70 py-3">
-        <p class="text-sm font-bold text-brand-dark">
-          {{ total }} món ăn
-          @if (selectedCategory) {
-            <span class="font-medium text-brand-muted">trong {{ selectedCategory }}</span>
-          }
-        </p>
-        <label class="flex items-center gap-2 text-xs font-medium text-brand-muted">
-          Sắp xếp:
-          <select
-            [ngModel]="selectedSort"
-            (ngModelChange)="changeSort($event)"
-            class="rounded-xl border border-brand-border bg-white px-3 py-2 text-xs font-bold text-brand-dark focus:border-brand-primary focus:outline-none"
-            aria-label="Sắp xếp kết quả món ăn"
-          >
-            @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </label>
+  <section class="mt-8">
+
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-brand-border pb-4">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-brand-primary">Food Discovery</span>
+        <h2 class="mt-1 text-xl font-extrabold text-brand-dark sm:text-2xl">
+          {{ hasSearched ? 'Kết quả tìm kiếm' : 'Khám phá món ngon' }}
+        </h2>
       </div>
+      @if (hasSearched && !isSearching && !searchError) {
+        <span class="rounded-full bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+          {{ total }} kết quả
+        </span>
+      }
     </div>
 
+    <!-- LƯU Ý: Các comment HTML đã được đẩy VÀO TRONG hoặc LÊN TRÊN block để không làm vỡ cấu trúc @else if -->
+
     @if (searchError) {
-      <div
-        class="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700"
-        role="alert"
-      >
-        {{ searchError }}
-        <button
-          type="button"
-          (click)="searchFoods()"
-          class="ml-2 font-bold underline"
-        >
-          Thử lại
-        </button>
+      <!-- ERROR STATE -->
+      <div class="rounded-2xl border border-rose-200 bg-rose-50 p-6" role="alert">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-circle-exclamation mt-1 text-xl text-rose-500" aria-hidden="true"></i>
+          <div class="flex-1">
+            <h3 class="font-extrabold text-rose-800">Không thể tải dữ liệu</h3>
+            <p class="mt-1 text-sm text-rose-700">{{ searchError }}</p>
+            <button type="button" (click)="searchFoods()" class="mt-4 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-rose-700">
+              <i class="fa-solid fa-rotate-right mr-1" aria-hidden="true"></i> Thử lại
+            </button>
+          </div>
+        </div>
       </div>
     } @else if (isSearching) {
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Đang tải món ăn">
+      <!-- LOADING STATE -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
-          <div class="h-72 animate-pulse rounded-2xl bg-stone-100"></div>
+          <div class="overflow-hidden rounded-2xl border border-brand-border bg-white">
+            <div class="h-48 animate-pulse bg-stone-100"></div>
+            <div class="space-y-3 p-4">
+              <div class="h-5 w-2/3 animate-pulse rounded bg-stone-100"></div>
+              <div class="h-3 w-full animate-pulse rounded bg-stone-100"></div>
+            </div>
+          </div>
         }
       </div>
-    } @else if (foods.length === 0) {
-      <div class="rounded-3xl border border-dashed border-brand-border bg-white px-5 py-16 text-center">
-        <i class="fa-solid fa-bowl-food mb-4 text-4xl text-brand-primary/50" aria-hidden="true"></i>
-        <h2 class="text-lg font-extrabold text-brand-dark">Chưa tìm thấy món phù hợp</h2>
-        <p class="mt-2 text-sm text-brand-muted">
-          Thử từ khóa khác hoặc chọn danh mục “Tất cả món”.
-        </p>
-      </div>
-    } @else {
-      <div class="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+    } @else if (foods.length > 0) {
+      <!-- FOOD LIST -->
+      <div class="grid items-start gap-5 sm:grid-cols-2 xl:grid-cols-3">
         @for (food of foods; track food.id) {
-          <article class="overflow-hidden rounded-2xl border border-brand-border bg-white shadow-warm-sm transition hover:-translate-y-0.5 hover:shadow-warm-md">
-            <div class="relative h-48 bg-brand-warmCard">
+          <article class="group overflow-hidden rounded-2xl border border-brand-border bg-white shadow-warm-sm transition duration-300 hover:-translate-y-1 hover:shadow-warm-md">
+
+            <div class="relative h-52 overflow-hidden bg-brand-warmCard">
               @if (food.image_url) {
-                <img
-                  [src]="food.image_url"
-                  [alt]="food.name"
-                  loading="lazy"
-                  class="h-full w-full object-cover"
-                />
+                <img [src]="food.image_url" [alt]="food.name" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
               } @else {
-                <div class="flex h-full items-center justify-center text-brand-primary/50">
-                  <i class="fa-solid fa-bowl-food text-5xl" aria-hidden="true"></i>
+                <div class="flex h-full items-center justify-center text-brand-primary/40">
+                  <i class="fa-solid fa-bowl-food text-6xl" aria-hidden="true"></i>
                 </div>
               }
               @if (food.category) {
-                <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-brand-dark shadow">
+                <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-bold text-brand-dark shadow-sm">
                   {{ food.category }}
                 </span>
               }
             </div>
 
-            <div class="p-4">
-              <div class="flex items-start justify-between gap-3">
-                <h2 class="text-lg font-extrabold text-brand-dark">{{ food.name }}</h2>
-                <span class="shrink-0 text-right text-sm font-extrabold text-brand-primary">
-                  {{ formatPrice(food.average_price) }}
-                </span>
-              </div>
+            <div class="p-5">
+              <h3 class="text-lg font-extrabold text-brand-dark transition group-hover:text-brand-primary">
+                {{ food.name }}
+              </h3>
               @if (food.description) {
-                <p class="mt-1 line-clamp-2 text-sm text-brand-muted">{{ food.description }}</p>
+                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-brand-muted">{{ food.description }}</p>
               }
-              <div class="mt-3 flex items-center gap-2 text-xs">
-                <span class="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 font-bold text-amber-700">
-                  <i class="fa-solid fa-star text-amber-500" aria-hidden="true"></i>
-                  {{ food.average_rating.toFixed(1) }}
-                </span>
-                <span class="text-brand-muted">{{ food.review_count }} đánh giá</span>
-                <span class="text-brand-border">•</span>
-                <span class="text-brand-muted">{{ food.restaurants.length }} quán phục vụ</span>
+
+              <div class="mt-4 flex items-center gap-2 text-xs text-brand-muted">
+                <i class="fa-solid fa-location-dot text-brand-primary" aria-hidden="true"></i>
+                {{ food.restaurants.length }} địa điểm khớp từ khóa
               </div>
 
-              @if (food.restaurants.length > 0) {
-                <div class="mt-4 border-t border-brand-border/70 pt-3">
-                  <h3 class="mb-2 text-[11px] font-bold uppercase tracking-wide text-brand-muted">
-                    Quán đang phục vụ
-                  </h3>
-                  <div class="space-y-2">
-                    @for (restaurant of food.restaurants.slice(0, 3); track restaurant.id) {
-                      <a [routerLink]="['/restaurant', restaurant.id]" class="flex items-center justify-between gap-3 text-xs hover:text-brand-primary">
-                        <div class="min-w-0">
-                          <p class="truncate font-bold text-brand-dark">{{ restaurant.name }}</p>
-                          <p class="truncate text-brand-muted">{{ restaurant.address }}</p>
+              <div class="mt-4 border-t border-brand-border/70 pt-4">
+                <h4 class="mb-3 text-[11px] font-bold uppercase tracking-wider text-brand-muted">Quán đang phục vụ</h4>
+                @if (food.restaurants.length > 0) {
+                  <div class="space-y-3">
+                    @for (restaurant of food.restaurants; track restaurant.id) {
+                      <a
+                        routerLink="/restaurant/place"
+                        [queryParams]="restaurantDetailQuery(restaurant)"
+                        class="flex items-center justify-between gap-3 rounded-lg text-left hover:text-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                      >
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate text-sm font-bold text-brand-dark">{{ restaurant.name }}</p>
+                          <p class="mt-0.5 truncate text-xs text-brand-muted">{{ restaurant.address || 'Chưa có thông tin địa chỉ' }}</p>
                         </div>
-                        <span class="shrink-0 font-bold text-brand-primary">
-                          {{ formatPrice(restaurant.price) }}
-                        </span>
+                        <i class="fa-solid fa-chevron-right shrink-0 text-brand-muted" aria-hidden="true"></i>
                       </a>
                     }
                   </div>
-                </div>
-              } @else {
-                <p class="mt-4 border-t border-brand-border/70 pt-3 text-xs text-brand-muted">
-                  Chưa có thông tin quán phục vụ món này.
-                </p>
-              }
+                } @else {
+                  <p class="text-xs leading-relaxed text-brand-muted">Chưa có thông tin quán phục vụ món này.</p>
+                }
+              </div>
             </div>
           </article>
         }
       </div>
 
+      <!-- PAGINATION -->
       @if (totalPages > 1) {
-        <nav class="mt-7 flex items-center justify-center gap-3" aria-label="Phân trang món ăn">
+        <nav class="mt-8 flex items-center justify-center gap-4" aria-label="Phân trang món ăn">
           <button
             type="button"
             (click)="changePage(page - 1)"
             [disabled]="page <= 1 || isSearching"
-            class="rounded-xl border border-brand-border bg-white px-4 py-2 text-sm font-bold text-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
+            class="rounded-xl border border-brand-border bg-white px-4 py-2.5 text-sm font-bold text-brand-dark transition hover:bg-brand-warmCard disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Trước
+            <i class="fa-solid fa-chevron-left mr-1" aria-hidden="true"></i> Trước
           </button>
-          <span class="text-sm font-medium text-brand-muted">
-            Trang {{ page }} / {{ totalPages }}
-          </span>
+          <span class="text-sm font-bold text-brand-muted">{{ page }} / {{ totalPages }}</span>
           <button
             type="button"
             (click)="changePage(page + 1)"
             [disabled]="page >= totalPages || isSearching"
-            class="rounded-xl border border-brand-border bg-white px-4 py-2 text-sm font-bold text-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
+            class="rounded-xl border border-brand-border bg-white px-4 py-2.5 text-sm font-bold text-brand-dark transition hover:bg-brand-warmCard disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Tiếp
+            Tiếp <i class="fa-solid fa-chevron-right ml-1" aria-hidden="true"></i>
           </button>
         </nav>
       }
+    } @else if (hasSearched) {
+      <!-- NO SEARCH RESULT -->
+      <div class="rounded-3xl border border-dashed border-brand-border bg-white px-5 py-16 text-center">
+        <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary">
+          <i class="fa-solid fa-bowl-food text-3xl" aria-hidden="true"></i>
+        </div>
+        <h3 class="mt-5 text-xl font-extrabold text-brand-dark">Chưa tìm thấy món ăn phù hợp</h3>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-brand-muted">
+          Không tìm thấy món ăn khớp với từ khóa <strong class="text-brand-dark">"{{ searchQuery }}"</strong>.
+        </p>
+        <button type="button" (click)="onQuickSearch('')" class="mt-5 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white transition hover:bg-brand-primaryHover">
+          Khám phá món ăn
+        </button>
+      </div>
+    } @else {
+      <!-- INITIAL STATE -->
+      <div class="overflow-hidden rounded-3xl border border-brand-border bg-white">
+        <div class="grid items-center gap-6 p-6 sm:p-10 lg:grid-cols-[1fr_auto]">
+          <div>
+            <span class="inline-flex items-center gap-2 rounded-full bg-brand-primary/10 px-3 py-1.5 text-xs font-bold text-brand-primary">
+              <i class="fa-solid fa-compass" aria-hidden="true"></i> Bắt đầu khám phá
+            </span>
+            <h3 class="mt-4 text-2xl font-extrabold text-brand-dark">Hôm nay bạn muốn ăn gì?</h3>
+            <p class="mt-2 max-w-lg text-sm leading-relaxed text-brand-muted">
+              Nhập tên món ăn để tìm kiếm hoặc chọn một gợi ý bên trên. Bạn cũng có thể tải ảnh lên để AI nhận diện món ăn.
+            </p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              @for (keyword of ['Mì Quảng', 'Ốc hút', 'Bánh bèo', 'Bê thui']; track keyword) {
+                <button
+                  type="button"
+                  (click)="onQuickSearch(keyword)"
+                  [disabled]="isSearching || isAnalyzing"
+                  class="rounded-full border border-brand-border px-4 py-2 text-xs font-bold text-brand-dark transition hover:border-brand-primary hover:bg-brand-primary/5 hover:text-brand-primary"
+                >
+                  {{ keyword }} <i class="fa-solid fa-arrow-right ml-1 text-[10px]" aria-hidden="true"></i>
+                </button>
+              }
+            </div>
+          </div>
+          <div class="hidden h-36 w-36 items-center justify-center rounded-full bg-brand-primary/5 text-brand-primary/40 lg:flex">
+            <i class="fa-solid fa-utensils text-6xl" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
     }
   </section>
 </main>

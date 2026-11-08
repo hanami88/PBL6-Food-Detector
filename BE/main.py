@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 import os
 from pathlib import Path
@@ -137,7 +138,7 @@ async def predict_food(file: UploadFile = File(...)):
 
     # 5. Nếu không có món nào >= 0.35 -> Yêu cầu chụp lại
     if not best_per_class:
-        return {
+        response = {
             "success": False,
             "require_retake": True,
             "message": "Không nhận diện rõ món ăn (độ chính xác dưới 35%). Vui lòng chụp lại ảnh gần và rõ nét hơn!",
@@ -145,6 +146,8 @@ async def predict_food(file: UploadFile = File(...)):
             "total_dishes": 0,
             "dishes": [],
         }
+        logger.info("AI prediction response:\n%s", json.dumps(response, ensure_ascii=False, indent=2))
+        return response
 
     # 6. Sắp xếp theo % giảm dần, gán mã màu và tính tọa độ
     sorted_items = sorted(best_per_class.values(), key=lambda x: x["conf_raw"], reverse=True)
@@ -174,7 +177,7 @@ async def predict_food(file: UploadFile = File(...)):
             }
         })
 
-    return {
+    response = {
         "success": True,
         "require_retake": False,
         "message": f"Nhận diện thành công {len(dishes_output)} món ăn.",
@@ -182,3 +185,5 @@ async def predict_food(file: UploadFile = File(...)):
         "total_dishes": len(dishes_output),
         "dishes": dishes_output,
     }
+    logger.info("AI prediction response:\n%s", json.dumps(response, ensure_ascii=False, indent=2))
+    return response

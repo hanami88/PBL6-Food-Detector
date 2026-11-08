@@ -1,0 +1,77 @@
+<main class="mx-auto max-w-4xl px-4 py-8">
+  <a
+    routerLink="/food-search"
+    class="mb-6 inline-flex items-center gap-2 text-sm font-bold text-brand-primary hover:underline"
+  >
+    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+    Quay lại kết quả tìm kiếm
+  </a>
+
+  <article class="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-warm-sm">
+    <div class="flex h-52 items-center justify-center bg-brand-warmCard text-brand-primary/60">
+      <i class="fa-solid fa-store text-6xl" aria-hidden="true"></i>
+    </div>
+
+    <div class="space-y-6 p-6 md:p-8">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-brand-primary">
+          Địa điểm từ OpenStreetMap
+        </p>
+        <h1 class="mt-2 text-2xl font-extrabold text-brand-dark md:text-3xl">{{ name }}</h1>
+      </div>
+
+      <section class="space-y-4 rounded-2xl bg-brand-warmCard/60 p-5">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-location-dot mt-1 text-brand-primary" aria-hidden="true"></i>
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wide text-brand-muted">Địa chỉ</h2>
+            <p class="mt-1 text-sm font-medium text-brand-dark">{{ address }}</p>
+          </div>
+        </div>
+
+        @if (openingHours) {
+          <div class="flex items-start gap-3">
+            <i class="fa-regular fa-clock mt-1 text-brand-primary" aria-hidden="true"></i>
+            <div>
+              <h2 class="text-xs font-bold uppercase tracking-wide text-brand-muted">Giờ hoạt động</h2>
+              <p class="mt-1 text-sm font-medium text-brand-dark">{{ openingHours }}</p>
+            </div>
+          </div>
+        }
+
+        @if (latitude !== null && longitude !== null) {
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-globe mt-1 text-brand-primary" aria-hidden="true"></i>
+            <div>
+              <h2 class="text-xs font-bold uppercase tracking-wide text-brand-muted">Tọa độ</h2>
+              <p class="mt-1 text-sm font-medium text-brand-dark">{{ latitude }}, {{ longitude }}</p>
+            </div>
+          </div>
+        }
+      </section>
+
+      <p class="text-sm leading-relaxed text-brand-muted">
+        Thông tin hiển thị trên trang được lấy từ OpenStreetMap. Google Maps được mở để tìm quán hoặc chỉ đường; trang này không tải dữ liệu Google Maps.
+      </p>
+
+      <a
+        [href]="googleMapsSearchUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-primaryHover"
+      >
+        Tìm quán trên Google Maps
+        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+      </a>
+      <a
+        [href]="googleMapsDirectionsUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ml-2 inline-flex items-center gap-2 rounded-xl border border-brand-border px-5 py-3 text-sm font-bold text-brand-dark transition hover:bg-brand-warmCard"
+      >
+        Chỉ đường trên Google Maps
+        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+      </a>
+    </div>
+  </article>
+</main>

@@ -54,6 +54,12 @@ export const routes: Routes = [
             .then(m => m.SavedRestaurantsComponent)
       },
       {
+        path: 'restaurant/place',
+        loadComponent: () =>
+          import('./shared/features/home/pages/external-restaurant-detail/external-restaurant-detail.component')
+            .then(m => m.ExternalRestaurantDetailComponent)
+      },
+      {
         path: 'restaurant/:id',
         loadComponent: () =>
           import('./shared/features/home/pages/restaurant-detail/restaurant-detail.component')
