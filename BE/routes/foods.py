@@ -1,13 +1,15 @@
 from concurrent.futures import ThreadPoolExecutor
 import logging
+import random
 from math import ceil, radians, sin, cos, asin, sqrt
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from database.database import get_db
-from models import Category, Food, Restaurant, Review, User
+from models import Category, Food, Restaurant, Review, SearchHistory, User
 from models.admin import AdminRestaurantState
 from models.associations import food_restaurants
 from schemas.food import (
@@ -24,9 +26,11 @@ from services.osm_places import (
     find_osm_place,
     search_osm_places,
 )
+from routes.user_dependencies import get_optional_active_user
 
 router = APIRouter(prefix="/api/foods", tags=["Foods"])
 logger = logging.getLogger(__name__)
+_DANANG_BOUNDS = (15.95, 16.15, 108.12, 108.32)
 
 
 def _food_items(
@@ -128,6 +132,14 @@ def get_homepage(
             status_code=422,
             detail="Cần cung cấp đồng thời latitude và longitude.",
         )
+    use_location = (
+        latitude is not None
+        and longitude is not None
+        and _DANANG_BOUNDS[0] <= latitude <= _DANANG_BOUNDS[1]
+        and _DANANG_BOUNDS[2] <= longitude <= _DANANG_BOUNDS[3]
+    )
+    if not use_location:
+        latitude = longitude = None
 
     food_searches = [
         ("Mì Quảng", "Đặc sản"),
@@ -146,12 +158,16 @@ def get_homepage(
 
     def search_places(query: str) -> list[dict]:
         try:
-            return search_osm_places(
+            places = search_osm_places(
                 query,
+                max_results=6 if use_location else 30,
                 latitude=latitude,
                 longitude=longitude,
                 restaurant_only=True,
             )
+            if not use_location:
+                return random.sample(places, min(len(places), 6))
+            return places
         except OSMPlacesError as error:
             logger.warning(
                 "Skipping OpenStreetMap results for %r after upstream failure: %s",
@@ -295,6 +311,8 @@ def search_foods(
     q: str = Query(default="", max_length=100),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1, le=50),
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_optional_active_user),
 ):
     terms = [term.strip() for term in q.split(",") if term.strip()]
     if not terms:
@@ -343,8 +361,28 @@ def search_foods(
             )
         )
 
+    result_count = sum(len(item.restaurants) for item in items)
     total = len(items)
     items = items[(page - 1) * page_size : page * page_size]
+
+    if q.strip() and page == 1:
+        db.add(
+            SearchHistory(
+                user_id=user.id if user else None,
+                keyword=q.strip()[:255],
+                search_type="ALL",
+                result_count=result_count,
+            )
+        )
+        try:
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
+            logger.exception("Failed to save food search history.")
+            raise HTTPException(
+                status_code=500,
+                detail="Không thể lưu lịch sử tìm kiếm.",
+            ) from None
 
     response = FoodSearchResponse(
         items=items,

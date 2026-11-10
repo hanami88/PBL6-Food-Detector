@@ -6,6 +6,7 @@ from .food_image import FoodImage
 from .restaurant import Restaurant
 from .review import Review
 from .role import Role
+from .search_history import SearchHistory
 from .user import User
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     "Restaurant",
     "Review",
     "Role",
+    "SearchHistory",
     "User",
     "associations",
 ]

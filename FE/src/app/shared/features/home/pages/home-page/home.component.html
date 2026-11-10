@@ -86,8 +86,8 @@
     <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
       <div>
         <span class="font-label-xs uppercase tracking-wider text-primary">Địa điểm từ OpenStreetMap</span>
-        <h2 class="mt-1 font-headline-lg text-on-surface">Món ngon nổi bật</h2>
-        <p class="mt-1 text-on-surface-variant">Tên món được dùng làm từ khóa tìm địa điểm trên OpenStreetMap; dữ liệu đánh giá không có sẵn.</p>
+        <h2 class="mt-1 font-headline-lg text-on-surface">Quán ăn được gợi ý</h2>
+        <p class="mt-1 text-on-surface-variant">Danh sách quán được tìm từ OpenStreetMap theo món ăn và vị trí của bạn.</p>
       </div>
       <a routerLink="/food-search" class="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Xem tất cả món ăn <i class="fa-solid fa-arrow-right"></i></a>
     </div>
@@ -97,71 +97,24 @@
           <div class="h-80 animate-pulse rounded-3xl bg-surface-container"></div>
         }
       </div>
-    } @else if (featuredFoods.length > 0) {
+    } @else if (featuredPlaces.length > 0) {
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        @for (food of featuredFoods; track food.id) {
-          <article class="group flex flex-col overflow-hidden rounded-3xl bg-surface-container-lowest shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-            <a [routerLink]="['/food-search']" [queryParams]="{ q: food.name }" class="relative aspect-[16/10] overflow-hidden bg-surface-container">
-              @if (food.image_url) {
-                <img [src]="food.image_url" [alt]="food.name" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105"/>
-              } @else {
-                <div class="flex h-full items-center justify-center text-primary"><i class="fa-solid fa-utensils text-6xl"></i></div>
-              }
-              @if (food.category) {
-                <span class="absolute left-3 top-3 rounded-full bg-surface-container-lowest/90 px-3 py-1 text-xs font-semibold text-on-surface backdrop-blur">{{ food.category }}</span>
-              }
-            </a>
-            <div class="flex flex-1 flex-col p-5">
-              <a [routerLink]="['/food-search']" [queryParams]="{ q: food.name }" class="font-headline-sm text-on-surface transition group-hover:text-primary">{{ food.name }}</a>
-              <p class="mt-1 line-clamp-2 min-h-10 text-sm text-on-surface-variant">{{ food.description || 'Khám phá hương vị đặc trưng của món ăn này tại Đà Nẵng.' }}</p>
-              <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
-                <span class="font-bold text-primary">{{ formatPrice(food.average_price) }}</span>
-                <span class="inline-flex items-center gap-1 text-on-surface-variant">
-                  @if (food.average_rating !== null && food.review_count > 0) {
-                    <i class="fa-solid fa-star text-[17px] text-tertiary"></i>
-                    {{ food.average_rating | number:'1.1-1' }} <span>({{ food.review_count }})</span>
-                  } @else {
-                    <span>Chưa có đánh giá</span>
-                  }
-                </span>
-              </div>
-              <p class="mt-3 border-t border-outline-variant/30 pt-3 text-xs text-on-surface-variant">
-                {{ food.restaurants.length ? food.restaurants[0].name : 'Chưa có quán liên kết' }}
-                @if (food.restaurants.length > 1) { <span> · +{{ food.restaurants.length - 1 }} quán</span> }
-              </p>
-            </div>
-          </article>
+        @for (place of featuredPlaces; track place.id) {
+          <button type="button" (click)="openPlace(place.name, place.address)"
+                  class="group flex min-h-52 flex-col items-start rounded-3xl bg-surface-container-lowest p-6 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+            <span class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-container text-primary">
+              <i class="fa-solid fa-store text-xl"></i>
+            </span>
+            <span class="font-headline-sm text-on-surface transition group-hover:text-primary">{{ place.name }}</span>
+            <span class="mt-2 line-clamp-2 text-sm text-on-surface-variant">{{ place.address }}</span>
+            <span class="mt-auto pt-5 text-xs font-semibold text-primary">Gợi ý từ món {{ place.foodName }} · OpenStreetMap ↗</span>
+          </button>
         }
       </div>
     } @else {
       <div class="rounded-2xl border border-dashed border-outline-variant p-10 text-center text-on-surface-variant">
-        Chưa có món ăn nổi bật được công bố. Bạn vẫn có thể tìm món trong danh bạ.
+        Chưa tìm thấy quán phù hợp từ OpenStreetMap. Vui lòng thử lại sau.
       </div>
-    }
-  </section>
-
-  <section class="mx-auto w-full max-w-[1280px] px-gutter py-space-xl">
-    <div class="mb-7">
-      <span class="font-label-xs uppercase tracking-wider text-primary">Khám phá theo khẩu vị</span>
-      <h2 class="mt-1 font-headline-lg text-on-surface">Danh mục món ăn</h2>
-    </div>
-    @if (categories.length > 0) {
-      <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        @for (category of categories; track category.slug) {
-          <button type="button" (click)="submitSearch(category.name)" class="group relative h-44 overflow-hidden rounded-2xl bg-surface-container text-left shadow-sm">
-            @if (category.image_url) {
-              <img [src]="category.image_url" [alt]="category.name" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"/>
-            }
-            <div class="absolute inset-0 bg-gradient-to-t from-on-background/85 via-on-background/15 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 right-4 text-surface-bright">
-              <h3 class="font-title-md font-bold">{{ category.name }}</h3>
-              <p class="text-xs text-surface-bright/80">{{ category.food_count }} món gợi ý</p>
-            </div>
-          </button>
-        }
-      </div>
-    } @else if (!isLoading) {
-      <p class="rounded-xl bg-surface-container-low p-6 text-center text-on-surface-variant">Danh mục sẽ xuất hiện khi có món ăn được công bố.</p>
     }
   </section>
 

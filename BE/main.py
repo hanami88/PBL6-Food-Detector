@@ -15,7 +15,7 @@ from PIL import Image, ImageOps
 from ultralytics import YOLO
 from database.database import Base, engine
 from create_admin import ensure_admin_account
-from models import Role, User
+from models import Role, SearchHistory, User
 from models.admin import AdminRestaurantState, FoodModerationSample, PriceChangeRequest
 from models.associations import restaurant_favorites, user_roles
 from routes.admin import router as admin_router
@@ -39,6 +39,7 @@ async def lifespan(_: FastAPI):
             FoodModerationSample.__table__,
             PriceChangeRequest.__table__,
             restaurant_favorites,
+            SearchHistory.__table__,
         ],
     )
     admin_config_keys = ("ADMIN_EMAIL", "ADMIN_PHONE", "ADMIN_NAME", "ADMIN_PASSWORD")

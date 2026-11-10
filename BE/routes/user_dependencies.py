@@ -16,16 +16,19 @@ from security import TOKEN_SECRET
 _bearer = HTTPBearer(auto_error=False)
 
 
-def require_active_user(
+def get_optional_active_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: Session = Depends(get_db),
-) -> User:
+) -> User | None:
+    if credentials is None:
+        return None
+
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Vui lòng đăng nhập để thực hiện thao tác này.",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    if credentials is None or credentials.scheme.lower() != "bearer":
+    if credentials.scheme.lower() != "bearer":
         raise unauthorized
 
     try:
@@ -57,4 +60,16 @@ def require_active_user(
     user = db.scalar(select(User).where(User.id == user_id))
     if user is None or not user.is_active:
         raise unauthorized
+    return user
+
+
+def require_active_user(
+    user: User | None = Depends(get_optional_active_user),
+) -> User:
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vui lòng đăng nhập để thực hiện thao tác này.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return user

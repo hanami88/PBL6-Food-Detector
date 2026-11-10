@@ -5,13 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-interface HomeCategory {
-  name: string;
-  slug: string;
-  image_url: string | null;
-  food_count: number;
-}
-
 interface HomeFood {
   id: number;
   name: string;
@@ -40,8 +33,14 @@ interface HomeRestaurant {
   maps_url: string | null;
 }
 
+interface FeaturedPlace {
+  id: string;
+  name: string;
+  address: string;
+  foodName: string;
+}
+
 interface HomepageResponse {
-  categories: HomeCategory[];
   featured_foods: HomeFood[];
   popular_foods: HomeFood[];
   nearby_restaurants: HomeRestaurant[];
@@ -60,11 +59,11 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly apiUrl = 'http://localhost:8000/api/foods/homepage';
   private requestId = 0;
+  private locationRequestId = 0;
 
   searchQuery = '';
   selectedDistrict = '';
   readonly districts = ['', 'Hải Châu', 'Sơn Trà', 'Ngũ Hành Sơn', 'Thanh Khê', 'Cẩm Lệ', 'Liên Chiểu'];
-  categories: HomeCategory[] = [];
   featuredFoods: HomeFood[] = [];
   popularFoods: HomeFood[] = [];
   nearbyRestaurants: HomeRestaurant[] = [];
@@ -75,7 +74,28 @@ export class HomeComponent implements OnInit {
   locationMessage = '';
 
   ngOnInit(): void {
-    void this.loadHomepage();
+    this.requestLocation(false);
+  }
+
+  get featuredPlaces(): FeaturedPlace[] {
+    const seen = new Set<string>();
+    return this.featuredFoods
+      .flatMap((food) =>
+        food.restaurants.map((restaurant) => ({
+          id: `${food.id}-${restaurant.id}`,
+          name: restaurant.name,
+          address: restaurant.address,
+          foodName: food.name,
+          key: `${restaurant.name}|${restaurant.address}`.toLocaleLowerCase(),
+        })),
+      )
+      .filter((place) => {
+        if (seen.has(place.key)) return false;
+        seen.add(place.key);
+        return true;
+      })
+      .slice(0, 6)
+      .map(({ key: _key, ...place }) => place);
   }
 
   async loadHomepage(latitude?: number, longitude?: number): Promise<void> {
@@ -93,7 +113,6 @@ export class HomeComponent implements OnInit {
         this.http.get<HomepageResponse>(this.apiUrl, { params }),
       );
       if (requestId !== this.requestId) return;
-      this.categories = response.categories;
       this.featuredFoods = response.featured_foods;
       this.popularFoods = response.popular_foods;
       this.nearbyRestaurants = response.nearby_restaurants;
@@ -103,7 +122,6 @@ export class HomeComponent implements OnInit {
       this.errorMessage = error instanceof HttpErrorResponse
         ? error.error?.detail || 'Không thể tải dữ liệu địa điểm. Vui lòng thử lại.'
         : 'Không thể tải dữ liệu địa điểm. Vui lòng thử lại.';
-      this.categories = [];
       this.featuredFoods = [];
       this.popularFoods = [];
       this.nearbyRestaurants = [];
@@ -121,28 +139,51 @@ export class HomeComponent implements OnInit {
   }
 
   selectDistrict(district: string): void {
+    this.locationRequestId++;
+    this.isLocating = false;
     this.selectedDistrict = district;
     this.locationMessage = '';
     void this.loadHomepage();
   }
 
   findNearby(): void {
+    this.requestLocation(true);
+  }
+
+  private requestLocation(showFailureMessage: boolean): void {
+    const locationRequestId = ++this.locationRequestId;
     if (!navigator.geolocation) {
-      this.locationMessage = 'Trình duyệt không hỗ trợ xác định vị trí.';
+      this.isLocating = false;
+      if (showFailureMessage) {
+        this.locationMessage = 'Trình duyệt không hỗ trợ xác định vị trí.';
+      } else {
+        this.locationMessage = 'Không thể lấy vị trí; đang hiển thị quán ăn tại Đà Nẵng.';
+        void this.loadHomepage();
+      }
       return;
     }
-    this.isLocating = true;
     this.locationMessage = '';
+    this.isLocating = true;
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (locationRequestId !== this.locationRequestId) return;
         this.isLocating = false;
         this.selectedDistrict = '';
-        this.locationMessage = 'Đã sắp xếp quán theo khoảng cách từ vị trí của bạn.';
-        void this.loadHomepage(position.coords.latitude, position.coords.longitude);
+        const { latitude, longitude } = position.coords;
+        const isInDaNang = latitude >= 15.95 && latitude <= 16.15
+          && longitude >= 108.12 && longitude <= 108.32;
+        this.locationMessage = isInDaNang
+          ? 'Đã sắp xếp quán theo khoảng cách từ vị trí của bạn.'
+          : 'Bạn đang ngoài khu vực Đà Nẵng; đang hiển thị ngẫu nhiên các quán tại Đà Nẵng.';
+        void this.loadHomepage(latitude, longitude);
       },
       () => {
+        if (locationRequestId !== this.locationRequestId) return;
         this.isLocating = false;
-        this.locationMessage = 'Không thể lấy vị trí. Hãy cho phép truy cập vị trí hoặc chọn quận.';
+        this.locationMessage = showFailureMessage
+          ? 'Không thể lấy vị trí. Hãy cho phép truy cập vị trí hoặc chọn quận.'
+          : 'Không thể lấy vị trí; đang hiển thị quán ăn tại Đà Nẵng.';
+        if (!showFailureMessage) void this.loadHomepage();
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
     );
@@ -154,9 +195,13 @@ export class HomeComponent implements OnInit {
   }
 
   openRestaurant(restaurant: HomeRestaurant): void {
+    this.openPlace(restaurant.name, restaurant.address);
+  }
+
+  openPlace(name: string, address: string): void {
     const params = new URLSearchParams({
       api: '1',
-      query: `${restaurant.name}, ${restaurant.address}`,
+      query: `${name}, ${address}`,
     });
     window.open(`https://www.google.com/maps/search/?${params.toString()}`, '_blank', 'noopener,noreferrer');
   }
