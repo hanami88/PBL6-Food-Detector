@@ -1,8 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
+import json
 import logging
+import os
 import random
 from math import ceil, radians, sin, cos, asin, sqrt
 
+import requests
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -20,13 +23,19 @@ from schemas.food import (
     HomeCategory,
     HomepageResponse,
     HomeRestaurant,
+    ItineraryAiNotice,
+    ItineraryData,
+    ItineraryMetric,
+    ItineraryMicroTag,
+    ItineraryRequest,
+    ItineraryTimelineStep,
 )
 from services.osm_places import (
     OSMPlacesError,
     find_osm_place,
     search_osm_places,
 )
-from routes.user_dependencies import get_optional_active_user
+from routes.user_dependencies import get_optional_active_user, require_active_user
 
 router = APIRouter(prefix="/api/foods", tags=["Foods"])
 logger = logging.getLogger(__name__)
@@ -294,6 +303,327 @@ def get_homepage(
     )
 
 
+def _normalize_history_terms(search_history: list[str] | None) -> list[str]:
+    if not search_history:
+        return ["Mì Quảng", "Bún chả cá", "Bánh tráng cuốn thịt heo", "Hải sản"]
+
+    terms: list[str] = []
+    for item in search_history:
+        text = str(item).strip()
+        if not text:
+            continue
+        parts = [part.strip() for part in text.replace("/", ",").split(",")]
+        for part in parts:
+            if part and part not in terms:
+                terms.append(part)
+    return terms[:6] if terms else ["Mì Quảng", "Bún chả cá", "Bánh tráng cuốn thịt heo"]
+
+
+def _build_itinerary_payload(search_terms: list[str], city: str, current_location: dict | None) -> ItineraryData:
+    terms = search_terms[:4]
+    seeded_stops = [
+        {
+            "title": "Mì Quảng Bà Mụa",
+            "tag": "BỮA SÁNG ĐẶC SẢN",
+            "time": "07:30 – 08:30",
+            "address": "42 Trưng Nữ Vương, Hải Châu, Đà Nẵng",
+            "priceRange": "35.000đ – 45.000đ",
+            "description": "Mì Quảng với nước lèo đậm đà, bánh tráng giòn và rau sống tươi, phù hợp cho điểm khởi hành sớm.",
+            "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
+            "smartPillText": "Giờ vàng: 07:30",
+            "smartPillSub": "Tránh đông sau 08:15",
+        },
+        {
+            "title": "Bánh Tráng Cuốn Thịt Heo Bà Mụa",
+            "tag": "BỮA TRƯA ĐẬM ĐÀ",
+            "time": "11:45 – 12:45",
+            "address": "93 Nguyễn Chí Thanh, Hải Châu, Đà Nẵng",
+            "priceRange": "65.000đ – 85.000đ",
+            "description": "Thịt heo chín vừa, bánh tráng dẻo, mắm nêm cay thơm rất hợp với gu người Đà Nẵng.",
+            "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80",
+            "smartPillText": "Phòng lạnh 24°C",
+            "smartPillSub": "Tránh nóng giữa trưa",
+        },
+        {
+            "title": "Chè Sầu Liên & Bánh Ép Nóng",
+            "tag": "ĂN VẶT & GIẢI NHIỆT",
+            "time": "15:30 – 16:30",
+            "address": "189 Hoàng Diệu, Sơn Trà, Đà Nẵng",
+            "priceRange": "25.000đ – 35.000đ",
+            "description": "Món ngọt giải nhiệt, phù hợp sau khi di chuyển hoặc ngắm cảnh tại Sơn Trà.",
+            "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
+            "smartPillText": "Chuẩn nhịp bản địa",
+            "smartPillSub": "Khung giờ ăn xế vàng",
+        },
+        {
+            "title": "Gió Biển Quán - Hải Sản",
+            "tag": "ĐẠI TIỆC HẢI SẢN TỐI",
+            "time": "18:30 – 20:30",
+            "address": "Lô 14 Hoàng Sa, Sơn Trà, Đà Nẵng",
+            "priceRange": "90.000đ – 130.000đ",
+            "description": "Gợi ý ăn tối ven biển, tối ưu cảm giác mát nhạt và hải sản tươi theo nhịp chiều tối.",
+            "image": "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=80",
+            "smartPillText": "Kịp xem hoàng hôn",
+            "smartPillSub": "Lúc 18:30 – 20:30",
+        },
+    ]
+
+    selected = []
+    for index, term in enumerate(terms):
+        if index >= len(seeded_stops):
+            break
+        stop = seeded_stops[index].copy()
+        if term.lower() not in stop["title"].lower():
+            stop["title"] = f"{term} • {stop['title']}"
+        selected.append(stop)
+    if not selected:
+        selected = seeded_stops[:4]
+
+    current_label = "Khởi hành từ trung tâm Đà Nẵng"
+    if current_location and current_location.get("latitude") is not None and current_location.get("longitude") is not None:
+        current_label = current_location.get("label") or "Vị trí hiện tại"
+
+    metrics = [
+        ItineraryMetric(
+            title="Tổng cự ly",
+            icon="fa-route",
+            iconClass="text-primary",
+            value=f"{(len(selected) * 1.7):.1f}",
+            unit="km",
+            subText=f"Tối ưu theo {', '.join(terms[:2]) or 'món ăn yêu thích'}",
+            subIcon="fa-bolt",
+            bgClass="bg-surface-container",
+            headerClass="text-on-surface-variant",
+        ),
+        ItineraryMetric(
+            title="Dự trù chi phí",
+            icon="fa-money-bill-wave",
+            iconClass="text-tertiary",
+            value=f"{(len(selected) * 55 + 55):.0f}k - {(len(selected) * 75 + 80):.0f}k",
+            unit="/ người",
+            subText="Bao gồm đồ uống, phụ kiện và VAT",
+            bgClass="bg-surface-container",
+            headerClass="text-on-surface-variant",
+        ),
+        ItineraryMetric(
+            title="Nhịp trải nghiệm",
+            icon="fa-utensils",
+            iconClass="text-primary-container",
+            value=f"{len(selected)} Điểm dừng",
+            unit="",
+            subText="Sáng • Trưa • Xế chiều • Tối",
+            bgClass="bg-surface-container",
+            headerClass="text-on-surface-variant",
+        ),
+        ItineraryMetric(
+            title="Điểm Gu Khẩu Vị",
+            icon="fa-circle-check",
+            iconClass="text-secondary",
+            value="96%",
+            unit="phù hợp",
+            subText=f"Ưu tiên {terms[0] if terms else 'món đặc trưng'}",
+            bgClass="bg-secondary-container/40",
+            headerClass="text-on-secondary-container font-bold",
+        ),
+    ]
+
+    timeline: list[ItineraryTimelineStep] = []
+    for index, stop in enumerate(selected, start=1):
+        timeline.append(
+            ItineraryTimelineStep(
+                type="stage",
+                stepNum=f"{index:02d}",
+                tag=stop["tag"],
+                tagClass="bg-primary-fixed text-on-primary-fixed",
+                time=stop["time"],
+                title=stop["title"],
+                address=stop["address"],
+                smartPillIcon="fa-clock",
+                smartPillText=stop["smartPillText"],
+                smartPillSub=stop["smartPillSub"],
+                smartPillClass="text-secondary",
+                image=stop["image"],
+                imageBadgeText="Khớp gu AI",
+                imageBadgeClass="text-primary",
+                priceRange=stop["priceRange"],
+                description=stop["description"],
+                microTags=[
+                    ItineraryMicroTag(text=f"Mở cửa: {stop['time']}", cssClass="bg-surface-container text-on-surface-variant"),
+                    ItineraryMicroTag(text=f"Đúng tiêu chí: {terms[index - 1] if index - 1 < len(terms) else 'đặc sản Đà Nẵng'}", cssClass="bg-secondary-container/60 text-on-secondary-container font-semibold"),
+                    ItineraryMicroTag(text=f"Khởi hành từ {current_label}", cssClass="bg-surface-container text-on-surface-variant"),
+                ],
+                primaryAction="Xem thực đơn chi tiết",
+            )
+        )
+        if index < len(selected):
+            timeline.append(
+                ItineraryTimelineStep(
+                    type="transition",
+                    transitIcon="fa-motorcycle" if index % 2 else "fa-car",
+                    distanceText=f"Di chuyển {(index * 1.4):.1f} km (~{(index * 3) + 4} phút)",
+                    routeDesc=f"{city} • {current_label}",
+                    suggestIcon="fa-mug-hot",
+                    suggestText="Gợi ý: giữ nhịp đi lại ngắn để ăn kịp giờ vàng",
+                    suggestClass="text-secondary",
+                )
+            )
+
+    ai_notices = [
+        ItineraryAiNotice(
+            icon="fa-sun",
+            iconClass="text-tertiary",
+            title=f"Thời tiết lý tưởng ({'29°C' if city == 'Đà Nẵng' else 'mát mẻ'})",
+            titleClass="text-on-surface",
+            desc=f"{city} có điều kiện thuận lợi để đi bộ và di chuyển ngắn giữa các điểm dừng, ưu tiên đặt chỗ sớm nếu bạn đi cuối tuần.",
+            bgClass="bg-surface-container",
+        ),
+        ItineraryAiNotice(
+            icon="fa-code-branch",
+            iconClass="text-secondary",
+            title="Tối ưu lưu lượng di chuyển",
+            titleClass="text-on-secondary-container",
+            desc="Các chặng được xếp theo hướng ngắn, giảm quay đầu và giữ nhịp ăn uống theo khung giờ tốt nhất.",
+            bgClass="bg-secondary-container/30",
+        ),
+        ItineraryAiNotice(
+            icon="fa-arrows-rotate",
+            iconClass="text-primary",
+            title="Đổi quán thông minh (dự phòng)",
+            titleClass="text-on-primary-fixed",
+            badgeText="+0m cự ly",
+            actionText="Áp dụng quán dự phòng này ngay →",
+            desc="Nếu điểm dừng đầu tiên hết chỗ, hệ thống có thể thay bằng quán lân cận cùng nhóm món để không làm lệch lịch trình.",
+            bgClass="bg-primary-fixed/40",
+        ),
+    ]
+    return ItineraryData(metrics=metrics, timeline=timeline, aiNotices=ai_notices)
+
+
+def _parse_ai_itinerary_response(response_text: str) -> ItineraryData | None:
+    try:
+        cleaned = response_text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.strip("`\n ")
+            if cleaned.lower().startswith("json"):
+                cleaned = cleaned[4:].strip()
+        data = json.loads(cleaned)
+        if isinstance(data, dict):
+            return ItineraryData.model_validate(data)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        logger.warning("AI itinerary response is not valid JSON: %s", response_text[:500])
+    return None
+
+
+def _call_ai_itinerary(search_terms: list[str], city: str, current_location: dict | None) -> ItineraryData | None:
+    api_key = os.getenv("OPENAI_API_KEY") or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        return None
+
+    prompt = (
+        "Bạn là AI chuyên gia gợi ý lộ trình ẩm thực. "
+        "Hãy trả về JSON thuần, bắt buộc có 3 keys: metrics, timeline, aiNotices. "
+        "Dữ liệu phải phù hợp với frontend Angular đang render, dùng các field: "
+        "metrics: [{title, icon, iconClass, value, unit, subText, subIcon, bgClass, headerClass}], "
+        "timeline: [{type, stepNum, tag, tagClass, time, title, address, smartPillIcon, smartPillText, smartPillSub, smartPillClass, image, imageBadgeIcon, imageBadgeText, imageBadgeClass, priceRange, description, microTags:[{text, cssClass}], primaryAction}] hoặc transition với [transitIcon, distanceText, routeDesc, suggestIcon, suggestText, suggestClass], "
+        "aiNotices: [{icon, iconClass, title, titleClass, desc, bgClass, badgeText, actionText}]. "
+        f"City={city}. Search terms={search_terms}. Current location={current_location}. "
+        "Chỉ trả JSON, không giải thích thêm."
+    )
+
+    headers = {"Content-Type": "application/json"}
+
+    if os.getenv("OPENAI_API_KEY"):
+        try:
+            response = requests.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={**headers, "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"},
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.7,
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            content = response.json()["choices"][0]["message"]["content"]
+            return _parse_ai_itinerary_response(content)
+        except Exception as exc:
+            logger.warning("OpenAI itinerary call failed: %s", exc)
+
+    google_api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if google_api_key:
+        try:
+            response = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={google_api_key}",
+                headers=headers,
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0.7},
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            content = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+            return _parse_ai_itinerary_response(content)
+        except Exception as exc:
+            logger.warning("Google Gemini itinerary call failed: %s", exc)
+
+    return None
+
+
+@router.post("/itinerary/recommend", response_model=ItineraryData)
+def recommend_itinerary(
+    payload: ItineraryRequest,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_optional_active_user),
+):
+    search_terms = _normalize_history_terms(payload.search_history)
+    if payload.search_history and user is not None:
+        for keyword in payload.search_history[:5]:
+            cleaned = str(keyword).strip()
+            if cleaned:
+                db.add(
+                    SearchHistory(
+                        user_id=user.id,
+                        keyword=cleaned[:255],
+                        search_type="ALL",
+                        result_count=len(payload.search_history),
+                    )
+                )
+        try:
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
+            logger.exception("Failed to save itinerary search history.")
+
+    itinerary = _call_ai_itinerary(
+        search_terms,
+        payload.city,
+        payload.current_location.model_dump() if payload.current_location else None,
+    )
+    if itinerary is None:
+        itinerary = _build_itinerary_payload(search_terms, payload.city, payload.current_location.model_dump() if payload.current_location else None)
+
+    if payload.current_location and payload.current_location.latitude is not None and payload.current_location.longitude is not None:
+        try:
+            nearby_places = search_osm_places(
+                "quán ăn Đà Nẵng",
+                max_results=6,
+                latitude=payload.current_location.latitude,
+                longitude=payload.current_location.longitude,
+                restaurant_only=True,
+            )
+            if nearby_places and itinerary.timeline:
+                first_place = nearby_places[0]
+                itinerary.timeline[0].address = first_place.get("address") or itinerary.timeline[0].address
+                if itinerary.timeline[0].title:
+                    itinerary.timeline[0].title = f"{itinerary.timeline[0].title.split('•')[0].strip()} • {first_place.get('name') or 'Quán lân cận'}"
+        except OSMPlacesError as error:
+            logger.warning("Failed to fetch nearby places for itinerary recommendation: %s", error)
+
+    return itinerary
+
+
 @router.get("/categories", response_model=list[str])
 def list_food_categories(db: Session = Depends(get_db)):
     statement = (
@@ -393,3 +723,62 @@ def search_foods(
     )
     logger.info("External food search response:\n%s", response.model_dump_json(indent=2))
     return response
+
+
+@router.get("/search-history")
+def get_user_search_history(
+    limit: int = Query(default=10, ge=1, le=20),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_active_user),
+):
+    rows = (
+        db.execute(
+            select(SearchHistory.keyword, SearchHistory.searched_at)
+            .where(SearchHistory.user_id == user.id)
+            .order_by(SearchHistory.searched_at.desc(), SearchHistory.id.desc())
+            .limit(limit)
+        )
+        .all()
+    )
+
+    history = []
+    seen = set()
+    for keyword, _ in rows:
+        key = str(keyword).strip()
+        if not key or key.lower() in seen:
+            continue
+        seen.add(key.lower())
+        history.append(key)
+
+    return {
+        "items": history,
+        "total": len(history),
+    }
+
+
+@router.get("/search-history/for-itinerary")
+def get_itinerary_history(
+    limit: int = Query(default=6, ge=1, le=20),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_active_user),
+):
+    rows = (
+        db.execute(
+            select(SearchHistory.keyword)
+            .where(SearchHistory.user_id == user.id)
+            .order_by(SearchHistory.searched_at.desc(), SearchHistory.id.desc())
+            .limit(limit)
+        )
+        .all()
+    )
+
+    history = []
+    seen = set()
+    for (keyword,) in rows:
+        key = str(keyword).strip()
+        if not key or key.lower() in seen:
+            continue
+        seen.add(key.lower())
+        history.append(key)
+
+    return {"search_history": history or ["Mì Quảng", "Bún chả cá", "Hải sản"]}

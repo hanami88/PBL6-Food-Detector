@@ -153,6 +153,81 @@ class SavedRestaurantItem(BaseModel):
     max_price: float | None
 
 
+class ItineraryLocation(BaseModel):
+    latitude: float | None = None
+    longitude: float | None = None
+    label: str | None = None
+
+
+class ItineraryRequest(BaseModel):
+    search_history: list[str] | None = None
+    current_location: ItineraryLocation | None = None
+    city: str = "Đà Nẵng"
+    max_stops: int = Field(default=4, ge=1, le=6)
+
+
+class ItineraryMetric(BaseModel):
+    title: str
+    icon: str
+    iconClass: str
+    value: str
+    unit: str = ""
+    subText: str = ""
+    subIcon: str | None = None
+    bgClass: str = "bg-surface-container"
+    headerClass: str = "text-on-surface-variant"
+
+
+class ItineraryMicroTag(BaseModel):
+    text: str
+    cssClass: str
+
+
+class ItineraryTimelineStep(BaseModel):
+    type: str
+    stepNum: str | None = None
+    tag: str | None = None
+    tagClass: str | None = None
+    time: str | None = None
+    title: str | None = None
+    address: str | None = None
+    smartPillIcon: str | None = None
+    smartPillText: str | None = None
+    smartPillSub: str | None = None
+    smartPillClass: str | None = None
+    image: str | None = None
+    imageBadgeIcon: str | None = None
+    imageBadgeText: str | None = None
+    imageBadgeClass: str | None = None
+    priceRange: str | None = None
+    description: str | None = None
+    microTags: list[ItineraryMicroTag] | None = None
+    primaryAction: str | None = None
+    transitIcon: str | None = None
+    distanceText: str | None = None
+    routeDesc: str | None = None
+    suggestIcon: str | None = None
+    suggestText: str | None = None
+    suggestClass: str | None = None
+
+
+class ItineraryAiNotice(BaseModel):
+    icon: str
+    iconClass: str
+    title: str
+    titleClass: str
+    desc: str
+    bgClass: str = "bg-surface-container"
+    badgeText: str | None = None
+    actionText: str | None = None
+
+
+class ItineraryData(BaseModel):
+    metrics: list[ItineraryMetric]
+    timeline: list[ItineraryTimelineStep]
+    aiNotices: list[ItineraryAiNotice]
+
+
 class RestaurantReviewCreate(BaseModel):
     food_id: int
     rating: int = Field(ge=1, le=5)
