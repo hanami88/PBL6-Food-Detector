@@ -9,3 +9,6 @@ FE/.angular/cache/
 BE/.venv/
 .DS_Store
 BE/.DS_Store
+BE/.env
+__pycache__/
+*.py[cod]
